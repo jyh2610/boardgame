@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const state = getSession(id);
+  const state = await getSession(id);
 
   if (!state) {
     return NextResponse.json(
@@ -15,6 +15,6 @@ export async function GET(
     );
   }
 
-  const code = getCodeByGameId(id);
+  const code = await getCodeByGameId(id);
   return NextResponse.json({ ...state, roomCode: code ?? undefined });
 }

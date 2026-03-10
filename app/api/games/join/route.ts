@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'code가 필요합니다.' }, { status: 400 });
     }
 
-    const gameId = getGameIdByCode(code);
+    const gameId = await getGameIdByCode(code);
     if (!gameId) {
       return NextResponse.json({ error: '유효하지 않은 방 코드입니다.' }, { status: 404 });
     }

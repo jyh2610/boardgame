@@ -20,7 +20,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const state = getSession(id);
+  const state = await getSession(id);
 
   if (!state) {
     return NextResponse.json(
@@ -166,7 +166,7 @@ export async function POST(
         );
     }
 
-    updateSession(id, nextState);
+    await updateSession(id, nextState);
     return NextResponse.json(nextState);
   } catch (e) {
     console.error(e);

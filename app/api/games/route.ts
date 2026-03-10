@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const state = createGame(numPlayers, names.slice(0, numPlayers));
-    const { gameId, code } = createSession(state);
+    const { gameId, code } = await createSession(state);
 
     return NextResponse.json({ gameId, code });
   } catch (e) {
