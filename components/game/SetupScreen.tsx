@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createGame, joinGame } from "@/lib/game-api";
 import { PLAYER_COLORS, PLAYER_ICONS } from "@/lib/game-data";
@@ -11,7 +10,6 @@ import { Users, LogIn } from "lucide-react";
 type Tab = "create" | "join";
 
 export default function SetupScreen() {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>("create");
   const [numPlayers, setNumPlayers] = useState(2);
   const [names, setNames] = useState([
@@ -32,7 +30,9 @@ export default function SetupScreen() {
         numPlayers,
         names.slice(0, numPlayers),
       );
-      router.push(`/game/${gameId}?p=0`);
+      // window.location으로 이동해 ?p=0이 반드시 URL에 포함되도록 함 (router.push 쿼리 누락 방지)
+      window.location.href = `/game/${gameId}?p=0`;
+      return;
     } catch (e) {
       setError(e instanceof Error ? e.message : "게임 생성 실패");
     } finally {
@@ -45,7 +45,8 @@ export default function SetupScreen() {
     setLoading(true);
     try {
       const { gameId } = await joinGame(joinCode.trim().toUpperCase());
-      router.push(`/game/${gameId}`);
+      window.location.href = `/game/${gameId}`;
+      return;
     } catch (e) {
       setError(e instanceof Error ? e.message : "참가 실패");
     } finally {

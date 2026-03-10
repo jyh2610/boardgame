@@ -1,26 +1,42 @@
 /**
  * 인메모리 게임 세션 저장소 (REST API용)
+ * 개발 시 핫 리로드해도 세션 유지 (globalThis 사용)
  */
-import type { GameState } from './game-engine';
+import type { GameState } from "./game-engine";
 
-const games = new Map<string, GameState>();
-const codeToId = new Map<string, string>();
-const idToCode = new Map<string, string>();
+const globalForGames = globalThis as unknown as {
+  games: Map<string, GameState>;
+  codeToId: Map<string, string>;
+  idToCode: Map<string, string>;
+};
+
+if (!globalForGames.games) {
+  globalForGames.games = new Map();
+  globalForGames.codeToId = new Map();
+  globalForGames.idToCode = new Map();
+}
+
+const games = globalForGames.games;
+const codeToId = globalForGames.codeToId;
+const idToCode = globalForGames.idToCode;
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
 function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return code;
 }
 
-export function createSession(state: GameState): { gameId: string; code: string } {
+export function createSession(state: GameState): {
+  gameId: string;
+  code: string;
+} {
   let gameId = generateId();
   while (games.has(gameId)) gameId = generateId();
 

@@ -1,25 +1,57 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useGame } from '@/lib/use-game';
-import { cn } from '@/lib/utils';
+import { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useGame } from "@/lib/use-game";
+import { cn } from "@/lib/utils";
 
 const DOT_POSITIONS: Record<number, { x: number; y: number }[]> = {
   1: [{ x: 50, y: 50 }],
-  2: [{ x: 28, y: 28 }, { x: 72, y: 72 }],
-  3: [{ x: 28, y: 28 }, { x: 50, y: 50 }, { x: 72, y: 72 }],
-  4: [{ x: 28, y: 28 }, { x: 72, y: 28 }, { x: 28, y: 72 }, { x: 72, y: 72 }],
-  5: [{ x: 28, y: 28 }, { x: 72, y: 28 }, { x: 50, y: 50 }, { x: 28, y: 72 }, { x: 72, y: 72 }],
-  6: [{ x: 28, y: 20 }, { x: 72, y: 20 }, { x: 28, y: 50 }, { x: 72, y: 50 }, { x: 28, y: 80 }, { x: 72, y: 80 }],
+  2: [
+    { x: 28, y: 28 },
+    { x: 72, y: 72 },
+  ],
+  3: [
+    { x: 28, y: 28 },
+    { x: 50, y: 50 },
+    { x: 72, y: 72 },
+  ],
+  4: [
+    { x: 28, y: 28 },
+    { x: 72, y: 28 },
+    { x: 28, y: 72 },
+    { x: 72, y: 72 },
+  ],
+  5: [
+    { x: 28, y: 28 },
+    { x: 72, y: 28 },
+    { x: 50, y: 50 },
+    { x: 28, y: 72 },
+    { x: 72, y: 72 },
+  ],
+  6: [
+    { x: 28, y: 20 },
+    { x: 72, y: 20 },
+    { x: 28, y: 50 },
+    { x: 72, y: 50 },
+    { x: 28, y: 80 },
+    { x: 72, y: 80 },
+  ],
 };
 
 function DiceFace({ value, rolling }: { value: number; rolling: boolean }) {
   return (
     <motion.div
       className="w-14 h-14 bg-white rounded-xl shadow-lg border-2 border-gray-200 flex items-center justify-center"
-      animate={rolling ? { rotate: [0, 90, 270, 360, 540, 720], scale: [1, 0.85, 1.1, 0.9, 1] } : { rotate: 0, scale: 1 }}
-      transition={{ duration: 0.6, ease: 'easeInOut' }}
+      animate={
+        rolling
+          ? {
+              rotate: [0, 90, 270, 360, 540, 720],
+              scale: [1, 0.85, 1.1, 0.9, 1],
+            }
+          : { rotate: 0, scale: 1 }
+      }
+      transition={{ duration: 0.6, ease: "easeInOut" }}
     >
       <svg viewBox="0 0 100 100" className="w-10 h-10">
         {(DOT_POSITIONS[value] ?? DOT_POSITIONS[1]).map((dot, i) => (
@@ -31,15 +63,34 @@ function DiceFace({ value, rolling }: { value: number; rolling: boolean }) {
 }
 
 export default function DiceControl() {
-  const { phase, diceValues, diceRolling, rollDice, finishMoving, setDiceRolling, movingPath, setState, isMyTurn } =
-    useGame();
+  const {
+    phase,
+    diceValues,
+    diceRolling,
+    rollDice,
+    movePlayer,
+    finishMoving,
+    setDiceRolling,
+    movingPath,
+    setState,
+    isMyTurn,
+  } = useGame();
 
   const animatingRef = useRef(false);
   const stepRef = useRef(0);
+  const finishedMovingRef = useRef(false);
+
+  // phase가 MOVING으로 바뀔 때마다 리셋
+  useEffect(() => {
+    if (phase !== "MOVING") {
+      finishedMovingRef.current = false;
+    }
+  }, [phase]);
 
   // Step-by-step movement animation
   useEffect(() => {
-    if (phase !== 'MOVING' || movingPath.length === 0 || animatingRef.current) return;
+    if (phase !== "MOVING" || movingPath.length === 0 || animatingRef.current)
+      return;
 
     animatingRef.current = true;
     stepRef.current = 0;
@@ -50,7 +101,21 @@ export default function DiceControl() {
         if (stepRef.current >= path.length) {
           animatingRef.current = false;
           setDiceRolling(false);
-          finishMoving();
+          // 서버에 move → finishMoving 순서로 호출 (move 없이 finishMoving만 하면 400 에러)
+          if (!finishedMovingRef.current) {
+            finishedMovingRef.current = true;
+            const steps = s.diceValues[0] + s.diceValues[1];
+            const currentPlayerId = s.players[s.currentPlayerIndex]?.id;
+            if (currentPlayerId !== undefined && steps > 0) {
+              Promise.resolve(movePlayer(currentPlayerId, steps))
+                .then(() => finishMoving())
+                .catch(() => {
+                  finishedMovingRef.current = false;
+                });
+            } else {
+              finishMoving();
+            }
+          }
           return s;
         }
         const nextPos = path[stepRef.current];
@@ -59,21 +124,30 @@ export default function DiceControl() {
         setTimeout(tick, 200);
         return {
           players: s.players.map((p, idx) =>
-            idx === currentIdx ? { ...p, position: nextPos } : p
+            idx === currentIdx ? { ...p, position: nextPos } : p,
           ),
         };
       });
     };
 
     setTimeout(tick, 350);
-  }, [phase, movingPath.length, finishMoving, setDiceRolling, setState]);
+  }, [
+    phase,
+    movingPath.length,
+    movePlayer,
+    finishMoving,
+    setDiceRolling,
+    setState,
+  ]);
 
-  const canRoll = phase === 'ROLL' && isMyTurn;
+  const canRoll = phase === "ROLL" && isMyTurn;
   const total = diceValues[0] + diceValues[1];
 
   return (
     <div className="flex flex-col items-center gap-3 p-4 bg-card rounded-2xl border border-border shadow-sm">
-      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">주사위</span>
+      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+        주사위
+      </span>
 
       {/* Dice faces */}
       <div className="flex gap-3 items-center">
@@ -102,17 +176,17 @@ export default function DiceControl() {
         whileHover={canRoll ? { scale: 1.04 } : {}}
         whileTap={canRoll ? { scale: 0.96 } : {}}
         className={cn(
-          'w-full py-3 px-6 rounded-xl font-bold text-sm transition-all duration-150',
+          "w-full py-3 px-6 rounded-xl font-bold text-sm transition-all duration-150",
           canRoll
-            ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-md cursor-pointer'
-            : 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
+            ? "bg-primary text-primary-foreground hover:opacity-90 shadow-md cursor-pointer"
+            : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
         )}
       >
-        {phase === 'MOVING'
-          ? '이동 중...'
-          : phase === 'ROLL'
-          ? '주사위 굴리기'
-          : '대기 중...'}
+        {phase === "MOVING"
+          ? "이동 중..."
+          : phase === "ROLL"
+            ? "주사위 굴리기"
+            : "대기 중..."}
       </motion.button>
     </div>
   );

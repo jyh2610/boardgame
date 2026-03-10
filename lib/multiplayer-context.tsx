@@ -14,6 +14,13 @@ import { fetchGame, dispatchAction, type GameAction } from "./game-api";
 
 const POLL_INTERVAL = 2000;
 
+/** 항상 최신 playerId 사용 (클로저 스테일 방지) */
+function usePlayerIdRef(playerId: number) {
+  const ref = useRef(playerId);
+  ref.current = playerId;
+  return ref;
+}
+
 interface MultiplayerContextValue {
   gameId: string;
   playerId: number;
@@ -40,9 +47,11 @@ export function MultiplayerGameProvider({
   playerId: number;
   children: ReactNode;
 }) {
+  const playerIdRef = usePlayerIdRef(playerId);
   const [state, setStateInternal] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isActing, setIsActing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
@@ -79,21 +88,44 @@ export function MultiplayerGameProvider({
 
   const act = useCallback(
     async (a: GameAction) => {
-      if (!state) return;
+      if (!state || isActing) return;
+      setIsActing(true);
       try {
-        const next = await dispatchAction(gameId, playerId, a);
+        const pid = playerIdRef.current;
+        const next = await dispatchAction(gameId, pid, a);
         setStateInternal(next);
+        setError(null);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "액션 실패");
+        const msg = e instanceof Error ? e.message : "액션 실패";
+        // 403(차례 아님), phase 불일치(이동 완료 등)는 경쟁 상태로 인한 것일 수 있음 → 새로고침만 하고 에러 팝업 표시 안 함
+        const isSoftError =
+          msg.includes("차례") ||
+          msg.includes("이동 완료할 수 없습니다") ||
+          msg.includes("이동할 수 없습니다") ||
+          msg.includes("굴릴 수 없습니다");
+        if (isSoftError) {
+          try {
+            const fresh = await fetchGame(gameId);
+            setStateInternal(fresh);
+            setError(null);
+          } catch {
+            setError(msg);
+          }
+        } else {
+          setError(msg);
+        }
+      } finally {
+        setIsActing(false);
       }
     },
-    [gameId, playerId, state],
+    [gameId, state, isActing],
   );
 
   const currentPlayerId = state?.players[state.currentPlayerIndex]?.id ?? -1;
   const isMyTurn =
     currentPlayerId === playerId &&
-    !state?.players[state.currentPlayerIndex]?.isBankrupt;
+    !state?.players[state.currentPlayerIndex]?.isBankrupt &&
+    !isActing;
 
   const roomCode =
     (state as GameState & { roomCode?: string })?.roomCode ?? null;

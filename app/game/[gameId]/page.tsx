@@ -17,18 +17,6 @@ import { cn } from "@/lib/utils";
 
 const PLAYER_STORAGE_KEY = "burumabul_player";
 
-function getStoredPlayerId(gameId: string): number | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(PLAYER_STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw) as Record<string, number>;
-    return data[gameId] ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function setStoredPlayerId(gameId: string, playerId: number) {
   try {
     const raw = localStorage.getItem(PLAYER_STORAGE_KEY);
@@ -46,13 +34,23 @@ function GameContent() {
   const mp = useMultiplayerGame();
   const [showPlayerPicker, setShowPlayerPicker] = useState(false);
 
+  // URL에 ?p= 가 없으면 플레이어 선택 화면 표시 (localStorage 사용 안 함 - 호스트/참가자 탭 혼동 방지)
   const playerIdParam = searchParams.get("p");
-  const storedPlayerId = getStoredPlayerId(gameId);
+  const resolvedPlayerId =
+    playerIdParam !== null ? parseInt(playerIdParam, 10) : null;
   const playerId =
-    playerIdParam !== null ? parseInt(playerIdParam, 10) : storedPlayerId;
+    resolvedPlayerId !== null &&
+    !isNaN(resolvedPlayerId) &&
+    resolvedPlayerId >= 0
+      ? resolvedPlayerId
+      : null;
+
+  // Provider의 playerId와 일치할 때만 게임 UI 표시 (race condition 방지)
+  const providerPlayerId = mp?.playerId ?? -1;
+  const playerIdReady = playerId === null || providerPlayerId === playerId;
 
   useEffect(() => {
-    if (playerId !== null && !isNaN(playerId) && playerId >= 0) {
+    if (playerId !== null) {
       setStoredPlayerId(gameId, playerId);
       setShowPlayerPicker(false);
     } else if (mp?.state && !mp.isLoading) {
@@ -125,6 +123,15 @@ function GameContent() {
 
   if (playerId === null || isNaN(playerId) || playerId < 0) {
     return null;
+  }
+
+  // Provider의 playerId가 아직 동기화되지 않았으면 잠시 대기 (잘못된 playerId로 API 호출 방지)
+  if (!playerIdReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">준비 중...</div>
+      </div>
+    );
   }
 
   return <GameInner gameId={gameId} playerId={playerId} />;
@@ -220,17 +227,22 @@ export default function GamePage() {
   const searchParams = useSearchParams();
   const gameId = params.gameId as string;
   const playerIdParam = searchParams.get("p");
-  const playerId = playerIdParam !== null ? parseInt(playerIdParam, 10) : 0;
+
+  // URL에 ?p= 가 있어야만 유효한 playerId (localStorage 사용 안 함)
+  const playerId =
+    playerIdParam !== null
+      ? (() => {
+          const n = parseInt(playerIdParam, 10);
+          return isNaN(n) || n < 0 ? 0 : n;
+        })()
+      : 0;
 
   if (!gameId) {
     return null;
   }
 
   return (
-    <MultiplayerGameProvider
-      gameId={gameId}
-      playerId={isNaN(playerId) ? 0 : Math.max(0, playerId)}
-    >
+    <MultiplayerGameProvider gameId={gameId} playerId={Math.max(0, playerId)}>
       <GameContent />
     </MultiplayerGameProvider>
   );

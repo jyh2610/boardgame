@@ -63,8 +63,15 @@ export async function dispatchAction(
     body: JSON.stringify({ playerId, ...action }),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || "액션 실패");
+    const err = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      debug?: { receivedPlayerId: number; currentPlayerId: number; phase: string };
+    };
+    const msg = err.error || "액션 실패";
+    if (res.status === 403 && err.debug) {
+      console.warn("[dispatchAction 403]", err.debug);
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
