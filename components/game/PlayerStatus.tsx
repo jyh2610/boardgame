@@ -4,6 +4,7 @@ import { useGame } from "@/lib/use-game";
 import { BOARD_TILES } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
 import { Building2, Home, Hammer } from "lucide-react";
+import PlayerToken from "./PlayerToken";
 
 function formatMoney(n: number) {
   if (Math.abs(n) >= 10000) return `${(n / 10000).toFixed(0)}만`;
@@ -35,12 +36,7 @@ export default function PlayerStatus() {
           >
             {/* Header row */}
             <div className="flex items-center gap-2 mb-2">
-              <div
-                className="w-8 h-8 rounded-full border-2 border-white/80 flex items-center justify-center text-base shadow-sm shrink-0"
-                style={{ backgroundColor: player.color }}
-              >
-                {player.icon}
-              </div>
+              <PlayerToken playerId={player.id} size="md" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 flex-wrap">
                   <span className="font-bold text-sm truncate">

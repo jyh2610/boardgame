@@ -11,6 +11,7 @@ import DiceControl from "@/components/game/DiceControl";
 import PlayerStatus from "@/components/game/PlayerStatus";
 import GameLog from "@/components/game/GameLog";
 import GameModal from "@/components/game/GameModal";
+import PlayerToken from "@/components/game/PlayerToken";
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -106,12 +107,7 @@ function GameContent() {
                 onClick={() => handlePickPlayer(p.id)}
                 className="flex items-center gap-3 p-3 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
               >
-                <div
-                  className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-lg"
-                  style={{ backgroundColor: p.color }}
-                >
-                  {p.icon}
-                </div>
+                <PlayerToken playerId={p.id} size="lg" />
                 <span className="font-bold">{p.name}</span>
               </button>
             ))}

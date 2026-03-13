@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useGame } from '@/lib/use-game';
-import { BOARD_TILES } from '@/lib/game-data';
-import TileComponent from './Tile';
+import { useGame } from "@/lib/use-game";
+import { BOARD_TILES } from "@/lib/game-data";
+import TileComponent from "./Tile";
 
 /**
  * Board layout - 36 tiles arranged as a ring:
@@ -79,7 +79,12 @@ export default function GameBoard() {
 
         {/* Center board */}
         <div
-          style={{ width: CENTER_W, height: CENTER_H, minWidth: CENTER_W, minHeight: CENTER_H }}
+          style={{
+            width: CENTER_W,
+            height: CENTER_H,
+            minWidth: CENTER_W,
+            minHeight: CENTER_H,
+          }}
           className="relative flex flex-col items-center justify-center bg-emerald-950 overflow-hidden"
         >
           {/* Grid lines */}
@@ -87,8 +92,8 @@ export default function GameBoard() {
             className="absolute inset-0 opacity-10 pointer-events-none"
             style={{
               backgroundImage:
-                'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
-              backgroundSize: '40px 40px',
+                "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
             }}
           />
 
@@ -99,15 +104,27 @@ export default function GameBoard() {
                 <span className="text-4xl">🌍</span>
               </div>
             </div>
-            <h2 className="text-2xl font-black text-primary tracking-widest drop-shadow">부루마블</h2>
+            <h2 className="text-2xl font-black text-primary tracking-widest drop-shadow">
+              부루마블
+            </h2>
             <p className="text-emerald-400 text-[10px] tracking-[0.25em] uppercase font-semibold">
               World Tour
             </p>
           </div>
 
           {/* Corner stars */}
-          {['top-3 left-3', 'top-3 right-3', 'bottom-3 left-3', 'bottom-3 right-3'].map((pos, i) => (
-            <span key={i} className={`absolute ${pos} text-emerald-600/50 text-xs`}>★</span>
+          {[
+            "top-3 left-3",
+            "top-3 right-3",
+            "bottom-3 left-3",
+            "bottom-3 right-3",
+          ].map((pos, i) => (
+            <span
+              key={i}
+              className={`absolute ${pos} text-emerald-600/50 text-xs`}
+            >
+              ★
+            </span>
           ))}
         </div>
 
