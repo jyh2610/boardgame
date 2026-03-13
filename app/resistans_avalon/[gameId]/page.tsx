@@ -199,7 +199,6 @@ function AvalonGameInner({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <Rulebook playerRole={state.playerRole ?? null} />
           <QuestTrack
             questTrack={state.questTrack}
             currentRound={state.currentRound}
@@ -225,7 +224,10 @@ function AvalonGameInner({
       <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-auto min-h-0">
         <aside className="lg:w-64 shrink-0">
           <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="text-sm font-semibold mb-3">플레이어</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold">플레이어</h3>
+              <Rulebook playerRole={state.playerRole ?? null} compact />
+            </div>
             <PlayerList
               players={state.players}
               proposedTeam={state.proposedTeam}

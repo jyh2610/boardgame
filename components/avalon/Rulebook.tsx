@@ -65,21 +65,23 @@ function MyRoleSection({ playerRole }: { playerRole: PlayerRoleInfo | null }) {
 export function Rulebook({
   playerRole,
   triggerClassName,
+  compact,
 }: {
   playerRole: PlayerRoleInfo | null;
   triggerClassName?: string;
+  compact?: boolean;
 }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          size={compact ? "icon" : "sm"}
           className={triggerClassName}
           title="룰북 보기"
         >
           <BookOpen className="size-4" />
-          룰북
+          {!compact && <span className="ml-1.5">룰북</span>}
         </Button>
       </SheetTrigger>
       <SheetContent
