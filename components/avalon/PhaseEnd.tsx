@@ -6,7 +6,7 @@ import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Trophy, Swords, RotateCcw } from "lucide-react";
+import { Trophy, Swords, RotateCcw, Skull } from "lucide-react";
 
 const ROLE_NAMES: Record<Role, string> = {
   MERLIN: "멀린",
@@ -24,6 +24,7 @@ interface PhaseEndProps {
   playerId: string;
   myTeam?: Team;
   players?: AvalonPlayerPublic[];
+  assassinationTarget?: string | null;
   onRestart?: () => Promise<void>;
 }
 
@@ -32,12 +33,17 @@ export function PhaseEnd({
   playerId,
   myTeam,
   players,
+  assassinationTarget,
   onRestart,
 }: PhaseEndProps) {
   const router = useRouter();
   const [isRestarting, setIsRestarting] = useState(false);
   const isGoodWin = winner === "GOOD";
   const isMyWin = myTeam ? myTeam === winner : undefined;
+
+  const targetPlayer = assassinationTarget
+    ? players?.find((p) => p.id === assassinationTarget)
+    : null;
 
   const handleRestart = async () => {
     if (!onRestart || isRestarting) return;
@@ -72,9 +78,34 @@ export function PhaseEnd({
           </p>
         )}
 
+        {assassinationTarget && targetPlayer && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4">
+            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              <Skull className="size-4 text-destructive" />
+              암살자가 지목한 플레이어
+            </h3>
+            <div className="flex items-center justify-between gap-3 py-2 px-3 rounded-md bg-background border border-border">
+              <span className="font-medium">{targetPlayer.name}</span>
+              {targetPlayer.role != null ? (
+                <span
+                  className={`text-sm font-semibold ${
+                    targetPlayer.team === "GOOD"
+                      ? "text-primary"
+                      : "text-destructive"
+                  }`}
+                >
+                  {ROLE_NAMES[targetPlayer.role]}
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">-</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {players && players.some((p) => p.role != null) && (
           <div className="rounded-lg border border-border bg-muted/30 p-4">
-            <h3 className="text-sm font-semibold mb-3">각 플레이어의 역할</h3>
+            <h3 className="text-sm font-semibold mb-3">모든 참가자 역할</h3>
             <div className="space-y-2">
               {players.map((p) => (
                 <div

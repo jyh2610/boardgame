@@ -806,6 +806,7 @@ export function getPublicStateForPlayer(
   canSubmitQuestCard: boolean;
   canAssassinate: boolean;
   winner: Team | null;
+  assassinationTarget: string | null;
   readyPlayerIds?: string[];
 } {
   const proposedSet = new Set(state.proposedTeam);
@@ -848,6 +849,7 @@ export function getPublicStateForPlayer(
     canSubmitQuestCard: state.phase === "QUESTING" && isOnQuest,
     canAssassinate: state.phase === "ASSASSINATION" && isAssassin,
     winner: state.winner,
+    assassinationTarget: state.assassinationTarget,
     readyPlayerIds: state.phase === "LOBBY" ? state.readyPlayerIds : undefined,
   };
 }

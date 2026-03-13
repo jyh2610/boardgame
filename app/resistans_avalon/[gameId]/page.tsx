@@ -382,6 +382,7 @@ function AvalonGameInner({
                 playerId={playerId}
                 myTeam={state.nightVision?.myTeam}
                 players={state.players}
+                assassinationTarget={state.assassinationTarget}
                 onRestart={async () => {
                   const { gameId: newGameId } = await createGame(
                     state.config.playerCount,
