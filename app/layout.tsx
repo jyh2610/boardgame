@@ -12,9 +12,9 @@ const _notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "부루마블 - 세계여행 보드게임",
+  title: "보드게임 - 부루마블 & 레지스탕스 아발론",
   description:
-    "세계 도시를 여행하며 부를 쌓는 보드게임, 부루마블을 온라인으로 즐기세요!",
+    "부루마블, 레지스탕스 아발론 등 보드게임을 온라인으로 즐기세요!",
   generator: "v0.app",
 };
 

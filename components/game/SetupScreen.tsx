@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { createGame, joinGame } from "@/lib/game-api";
 import { PLAYER_COLORS, PLAYER_ICONS } from "@/lib/game-data";
 import { cn } from "@/lib/utils";
-import { Users, LogIn } from "lucide-react";
+import { Users, LogIn, ArrowLeft } from "lucide-react";
 
 type Tab = "create" | "join";
 
@@ -56,6 +57,13 @@ export default function SetupScreen() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 relative overflow-hidden">
+      <Link
+        href="/"
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="size-4" />
+        게임 선택
+      </Link>
       <div
         className="absolute inset-0 opacity-5 pointer-events-none"
         style={{

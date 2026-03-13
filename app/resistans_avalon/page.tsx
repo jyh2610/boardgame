@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createGame, joinGame } from "@/lib/avalon-api";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sword, Users, LogIn } from "lucide-react";
+import { Sword, Users, LogIn, ArrowLeft } from "lucide-react";
 
 const PLAYER_COUNTS = [5, 6, 7, 8, 9, 10] as const;
 
@@ -78,7 +79,14 @@ export default function ResistansAvalonLobbyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative">
+      <Link
+        href="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="size-4" />
+        게임 선택
+      </Link>
       <div className="w-full max-w-md space-y-8">
         <header className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
