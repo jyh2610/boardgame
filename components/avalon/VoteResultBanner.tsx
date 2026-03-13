@@ -21,7 +21,7 @@ export function VoteResultBanner({
           : "bg-red-500/10 border-red-500/30"
       }`}
     >
-      <p className="text-base font-semibold flex items-center justify-center gap-2">
+      <p className="text-sm sm:text-base font-semibold flex flex-wrap items-center justify-center gap-2">
         {passed ? (
           <>
             <CheckCircle2 className="size-5 text-green-600 dark:text-green-400 shrink-0" />

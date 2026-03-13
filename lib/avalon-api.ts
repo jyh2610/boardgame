@@ -28,6 +28,7 @@ export interface AvalonPublicState {
   canVote: boolean;
   hasVoted: boolean;
   canSubmitQuestCard: boolean;
+  hasSubmittedQuestCard: boolean;
   canAssassinate: boolean;
   winner: Team | null;
   assassinationTarget: string | null;

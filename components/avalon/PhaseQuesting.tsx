@@ -10,6 +10,7 @@ interface PhaseQuestingProps {
   players: AvalonPlayerPublic[];
   proposedTeam: string[];
   playerId: string;
+  hasSubmittedQuestCard: boolean;
   onSubmitCard: (card: "SUCCESS" | "FAIL") => Promise<void>;
   isActing: boolean;
 }
@@ -18,6 +19,7 @@ export function PhaseQuesting({
   players,
   proposedTeam,
   playerId,
+  hasSubmittedQuestCard,
   onSubmitCard,
   isActing,
 }: PhaseQuestingProps) {
@@ -36,7 +38,11 @@ export function PhaseQuesting({
       <CardContent className="space-y-6">
         <ProposedTeam proposedTeam={proposedTeam} players={players} />
 
-        {isOnQuest && (
+        {isOnQuest && hasSubmittedQuestCard ? (
+          <div className="py-4 px-6 rounded-xl bg-primary/10 border border-primary/20 text-center">
+            <p className="text-lg font-semibold text-primary">선택 완료</p>
+          </div>
+        ) : isOnQuest ? (
           <div className="flex gap-4">
             <Button
               className="flex-1"
@@ -59,7 +65,7 @@ export function PhaseQuesting({
               실패
             </Button>
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

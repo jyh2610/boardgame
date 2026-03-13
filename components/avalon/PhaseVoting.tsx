@@ -86,7 +86,7 @@ export function PhaseVoting({
             <p className="text-lg font-semibold text-primary">투표 완료</p>
           </div>
         ) : !hasVoted && canVote ? (
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
               className="flex-1"
               size="lg"

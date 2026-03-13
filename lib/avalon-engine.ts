@@ -705,6 +705,14 @@ export function submitQuestCard(
     };
   }
 
+  if (player.questCard !== null) {
+    return {
+      success: false,
+      state,
+      error: "이미 카드를 제출했습니다.",
+    };
+  }
+
   // 선(GOOD) 진영은 무조건 성공만 제출 가능
   if (player.team === "GOOD" && card === "FAIL") {
     return {
@@ -915,6 +923,7 @@ export function getPublicStateForPlayer(
   canVote: boolean;
   hasVoted: boolean;
   canSubmitQuestCard: boolean;
+  hasSubmittedQuestCard: boolean;
   canAssassinate: boolean;
   winner: Team | null;
   assassinationTarget: string | null;
@@ -951,6 +960,9 @@ export function getPublicStateForPlayer(
   const hasVoted =
     state.phase === "VOTING" &&
     (state.players.find((p) => p.id === playerId)?.vote ?? null) !== null;
+  const hasSubmittedQuestCard =
+    state.phase === "QUESTING" &&
+    (state.players.find((p) => p.id === playerId)?.questCard ?? null) !== null;
 
   return {
     config: state.config,
@@ -964,7 +976,9 @@ export function getPublicStateForPlayer(
     canProposeTeam: state.phase === "TEAM_BUILDING" && isLeader,
     canVote: state.phase === "VOTING",
     hasVoted,
-    canSubmitQuestCard: state.phase === "QUESTING" && isOnQuest,
+    canSubmitQuestCard:
+      state.phase === "QUESTING" && isOnQuest && !hasSubmittedQuestCard,
+    hasSubmittedQuestCard,
     canAssassinate: state.phase === "ASSASSINATION" && isAssassin,
     winner: state.winner,
     assassinationTarget: state.assassinationTarget,

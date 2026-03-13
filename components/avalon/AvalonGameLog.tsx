@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AvalonGameLogProps {
@@ -28,8 +27,11 @@ export function AvalonGameLog({ gameLog, className }: AvalonGameLogProps) {
           게임 로그
         </span>
       </div>
-      <ScrollArea className="flex-1 h-32 lg:h-40">
-        <div ref={scrollRef} className="flex flex-col p-2 gap-1">
+      <div
+        ref={scrollRef}
+        className="min-h-0 overflow-y-auto h-24 sm:h-32 lg:h-40"
+      >
+        <div className="flex flex-col p-2 gap-1">
           <AnimatePresence initial={false}>
             {(gameLog ?? []).map((log, i) => (
               <motion.div
@@ -52,7 +54,7 @@ export function AvalonGameLog({ gameLog, className }: AvalonGameLogProps) {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

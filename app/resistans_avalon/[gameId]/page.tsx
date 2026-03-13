@@ -253,45 +253,53 @@ function AvalonGameInner({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="shrink-0 flex items-center justify-between px-4 py-2 border-b border-border bg-card/80 backdrop-blur-sm z-40">
-        <div className="flex items-center gap-2">
-          <Sword className="size-6 text-primary" />
-          <h1 className="text-lg font-black text-primary tracking-widest">
-            아발론
-          </h1>
-          {mp.roomCode && (
-            <button
-              onClick={copyCode}
-              className="text-xs font-mono bg-muted px-2 py-1 rounded-lg hover:bg-muted/80 transition-colors"
-              title="방 코드 복사"
-            >
-              {mp.roomCode} {copied ? "✓" : "📋"}
-            </button>
-          )}
+      <header className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 px-3 sm:px-4 py-2 border-b border-border bg-card/80 backdrop-blur-sm z-40">
+        <div className="flex items-center justify-between sm:justify-start gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sword className="size-5 sm:size-6 text-primary shrink-0" />
+            <h1 className="text-base sm:text-lg font-black text-primary tracking-widest truncate">
+              아발론
+            </h1>
+            {mp.roomCode && (
+              <button
+                onClick={copyCode}
+                className="text-[10px] sm:text-xs font-mono bg-muted px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg hover:bg-muted/80 transition-colors shrink-0"
+                title="방 코드 복사"
+              >
+                {mp.roomCode} {copied ? "✓" : "📋"}
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => router.push("/resistans_avalon")}
+            className="flex sm:hidden items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted shrink-0"
+          >
+            <RotateCcw size={13} />
+            나가기
+          </button>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center justify-between sm:justify-center gap-2 sm:gap-4 min-w-0">
           <QuestTrack
             questTrack={state.questTrack}
             currentRound={state.currentRound}
             questSizes={state.config.questSizes}
           />
           <RejectCount rejectTrack={state.rejectTrack} phase={state.phase} />
+          <button
+            onClick={() => router.push("/resistans_avalon")}
+            className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-lg hover:bg-muted shrink-0"
+          >
+            <RotateCcw size={13} />
+            나가기
+          </button>
         </div>
-
-        <button
-          onClick={() => router.push("/resistans_avalon")}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-lg hover:bg-muted"
-        >
-          <RotateCcw size={13} />
-          나가기
-        </button>
       </header>
 
       <BoardStatus players={state.players} proposedTeam={state.proposedTeam} />
 
-      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-auto min-h-0">
-        <aside className="lg:w-64 shrink-0">
+      <main className="flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 p-3 sm:p-4 overflow-auto min-h-0">
+        <aside className="lg:w-64 shrink-0 order-2 lg:order-none">
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">플레이어</h3>
@@ -313,7 +321,7 @@ function AvalonGameInner({
           </div>
         </aside>
 
-        <section className="flex-1 flex items-start justify-center overflow-auto py-4 min-w-0">
+        <section className="flex-1 flex items-start justify-center overflow-auto py-3 sm:py-4 min-w-0 order-1 lg:order-none">
           <div className="w-full max-w-2xl">
             {state.lastVoteResult &&
               (state.phase === "QUESTING" ||
@@ -380,6 +388,7 @@ function AvalonGameInner({
                 players={state.players}
                 proposedTeam={state.proposedTeam}
                 playerId={playerId}
+                hasSubmittedQuestCard={state.hasSubmittedQuestCard}
                 onSubmitCard={(card) =>
                   mp.act({ action: "questCard", payload: { card } })
                 }
@@ -430,7 +439,7 @@ function AvalonGameInner({
           </div>
         </section>
 
-        <aside className="lg:w-72 shrink-0 w-full lg:max-w-[288px] flex flex-col gap-3">
+        <aside className="lg:w-72 shrink-0 w-full lg:max-w-[288px] flex flex-col gap-3 order-3 lg:order-none">
           <AvalonGameLog gameLog={state.gameLog ?? []} className="shrink-0" />
           <GameChat
             gameId={gameId}
@@ -438,7 +447,7 @@ function AvalonGameInner({
             playerName={
               state.players.find((p) => p.id === playerId)?.name ?? "플레이어"
             }
-            className="h-[280px] lg:h-[340px] flex-1 min-h-0"
+            className="h-[200px] sm:h-[240px] lg:h-[340px] flex-1 min-h-0"
           />
         </aside>
       </main>
