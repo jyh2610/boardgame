@@ -6,8 +6,7 @@ import {
   AvalonMultiplayerProvider,
   useAvalonMultiplayer,
 } from "@/lib/avalon-multiplayer-context";
-import { fetchGame } from "@/lib/avalon-api";
-import type { AvalonMatchState } from "@/lib/avalon-engine";
+import { fetchSlots, claimPlayer } from "@/lib/avalon-api";
 import { QuestTrack } from "@/components/avalon/QuestTrack";
 import { RejectCount } from "@/components/avalon/RejectCount";
 import { BoardStatus } from "@/components/avalon/BoardStatus";
@@ -21,6 +20,7 @@ import { PhaseEnd } from "@/components/avalon/PhaseEnd";
 import { GameChat } from "@/components/avalon/GameChat";
 import { Rulebook } from "@/components/avalon/Rulebook";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RotateCcw, Sword } from "lucide-react";
 
 function PlayerPicker({
@@ -31,18 +31,24 @@ function PlayerPicker({
   onPick: (playerId: string) => void;
 }) {
   const router = useRouter();
-  const [players, setPlayers] = useState<{ id: string; name: string }[]>([]);
+  const [slots, setSlots] = useState<
+    { id: string; name: string; isTaken: boolean }[]
+  >([]);
+  const [isFull, setIsFull] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState("");
+  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const data = await fetchGame(gameId);
-        const state = data as AvalonMatchState;
-        if (!cancelled && state?.players) {
-          setPlayers(state.players.map((p) => ({ id: p.id, name: p.name })));
+        const data = await fetchSlots(gameId);
+        if (!cancelled) {
+          setSlots(data.slots);
+          setIsFull(data.isFull);
         }
       } catch (e) {
         if (!cancelled) {
@@ -56,6 +62,44 @@ function PlayerPicker({
       cancelled = true;
     };
   }, [gameId]);
+
+  useEffect(() => {
+    if (selectedId) {
+      const slot = slots.find((s) => s.id === selectedId);
+      setDisplayName(slot?.name ?? "");
+    }
+  }, [selectedId, slots]);
+
+  useEffect(() => {
+    if (isFull && !loading) {
+      alert("방이 가득 찼습니다. 로비로 이동합니다.");
+      router.replace("/resistans_avalon");
+    }
+  }, [isFull, loading, router]);
+
+  if (isFull && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">방이 가득 찼습니다. 로비로 이동합니다...</div>
+      </div>
+    );
+  }
+
+  const handleEnter = async () => {
+    if (!selectedId || claiming) return;
+    const slotName = slots.find((s) => s.id === selectedId)?.name;
+    const trimmed = (displayName.trim() || slotName) ?? "플레이어";
+    setClaiming(true);
+    try {
+      await claimPlayer(gameId, selectedId, trimmed);
+      onPick(selectedId);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "입장 실패";
+      alert(msg);
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -84,22 +128,53 @@ function PlayerPicker({
       <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full">
         <h2 className="text-lg font-bold mb-4">플레이어 선택</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          당신의 캐릭터를 선택하세요.
+          당신의 캐릭터를 선택하고 이름을 입력하세요.
         </p>
-        <div className="flex flex-col gap-2">
-          {players.map((p) => (
+        <div className="flex flex-col gap-2 mb-4">
+          {slots.map((p) => (
             <button
               key={p.id}
-              onClick={() => onPick(p.id)}
-              className="flex items-center gap-3 p-3 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+              onClick={() => !p.isTaken && setSelectedId(p.id)}
+              disabled={p.isTaken}
+              className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                p.isTaken
+                  ? "border-border bg-muted/50 opacity-60 cursor-not-allowed"
+                  : selectedId === p.id
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50 hover:bg-primary/5"
+              }`}
             >
               <div className="size-10 rounded-full flex items-center justify-center text-lg font-bold border-2 border-border bg-muted">
                 {p.name.charAt(0)}
               </div>
               <span className="font-bold">{p.name}</span>
+              {p.isTaken && (
+                <span className="ml-auto text-xs text-muted-foreground">
+                  선택됨
+                </span>
+              )}
             </button>
           ))}
         </div>
+        {selectedId && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">이름</label>
+            <Input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="닉네임을 입력하세요"
+              className="w-full"
+            />
+            <Button
+              className="w-full"
+              onClick={handleEnter}
+              disabled={claiming}
+            >
+              {claiming ? "입장 중..." : "입장하기"}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -158,7 +233,8 @@ function AvalonGameInner({
   // 유저 접속 시 채팅에 접속 알림 전송 (최초 1회)
   useEffect(() => {
     if (!state || !playerId || joinNotifiedRef.current) return;
-    const playerName = state.players.find((p) => p.id === playerId)?.name ?? "플레이어";
+    const playerName =
+      state.players.find((p) => p.id === playerId)?.name ?? "플레이어";
     joinNotifiedRef.current = true;
     fetch(`${CHAT_API}/${gameId}/chat/join`, {
       method: "POST",
@@ -216,10 +292,7 @@ function AvalonGameInner({
         </button>
       </header>
 
-      <BoardStatus
-        players={state.players}
-        proposedTeam={state.proposedTeam}
-      />
+      <BoardStatus players={state.players} proposedTeam={state.proposedTeam} />
 
       <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-auto min-h-0">
         <aside className="lg:w-64 shrink-0">

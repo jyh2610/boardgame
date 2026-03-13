@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAvalonGame } from "@/lib/avalon-engine";
 import { createAvalonSession } from "@/lib/avalon-sessions";
+import { supabase } from "@/lib/supabase-server";
 
 /** 아발론 게임 생성 */
 export async function POST(request: NextRequest) {
@@ -36,6 +37,12 @@ export async function POST(request: NextRequest) {
 
     const state = createAvalonGame(playerIds, playerNames);
     const { gameId, code } = await createAvalonSession(state);
+
+    // 호스트(플레이어 0) 슬롯 자동 점유
+    await supabase.from("avalon_connected_players").insert({
+      game_id: gameId,
+      player_id: "0",
+    });
 
     return NextResponse.json({ gameId, code });
   } catch (e) {

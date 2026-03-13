@@ -7,9 +7,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Lightbulb } from "lucide-react";
 import type { Role, Team } from "@/lib/avalon-engine";
 import type { PlayerRoleInfo } from "@/lib/avalon-engine";
 
@@ -43,6 +48,26 @@ const ROLE_DESCRIPTIONS: Record<Role, string> = {
     "악의 세력. 악 동료들을 모두 알고 있음. 원정에 참가 시 실패 카드 제출 가능.",
 };
 
+/** 역할별 행동 어드바이스 - 내가 취하면 좋은 행동 */
+const ROLE_ADVICE: Record<Role, string> = {
+  MERLIN:
+    "• 악을 알고 있으니 원정대에 악이 들어가지 않도록 채팅으로 은근히 유도하세요.\n• 너무 직접적으로 지목하면 암살 타겟이 됩니다. 애매하게 힌트만 주세요.\n• 투표 패턴을 보며 악을 추리하는 데 도움을 주세요.",
+  PERCIVAL:
+    "• 멀린 후보 둘 중 진짜 멀린을 찾아 그 사람 말을 따르세요.\n• 멀린이 암살당하지 않도록, 멀린 후보를 지나치게 드러내지 않게 조절하세요.\n• 악(모르가나)이 멀린 행세를 할 수 있으니 말과 행동을 꼼꼼히 비교하세요.",
+  LOYAL:
+    "• 투표·채팅 패턴을 보며 악을 추리하세요.\n• 원정대에 악이 섞였을 가능성이 있으면 반대표를 던지세요.\n• 퍼시벌·멀린의 힌트에 귀 기울이세요.",
+  ASSASSIN:
+    "• 원정에 참가하면 적절한 타이밍에 실패 카드를 넣으세요.\n• 선이 3승하면 멀린을 지목해야 하니, 채팅·투표 패턴으로 멀린을 추리하세요.\n• 악 동료들과 암묵적으로 협력하세요.",
+  MORGANNA:
+    "• 퍼시벌에게 멀린 후보로 보이니, 멀린 행세로 퍼시벌을 혼란시키세요.\n• 악 동료들과 협력해 원정 실패·투표 부결을 노리세요.\n• 암살 단계에서 암살자가 멀린을 고르는 데 도움을 주세요.",
+  MORDRED:
+    "• 멀린에게 안 보이므로 비교적 안전하게 행동할 수 있습니다.\n• 악 동료들과 협력하되, 선처럼 행동해 의심을 덜 받으세요.\n• 원정에 들어가면 전략적으로 실패 카드를 사용하세요.",
+  OBERON:
+    "• 다른 악을 모르니 혼자 판단해야 합니다. 투표·원정 패턴을 잘 읽으세요.\n• 악처럼 보이지 않게 행동하다가, 원정에 참가할 때만 실패를 넣으세요.\n• 선 쪽이 혼란스러워 보이면 그때 반대표를 활용하세요.",
+  MINION:
+    "• 악 동료들과 협력해 원정 실패·투표 부결을 노리세요.\n• 원정에 참가하면 타이밍을 보고 실패 카드를 제출하세요.\n• 선처럼 행동해 의심을 덜 받으세요.",
+};
+
 function MyRoleSection({ playerRole }: { playerRole: PlayerRoleInfo | null }) {
   if (!playerRole) return null;
 
@@ -50,10 +75,34 @@ function MyRoleSection({ playerRole }: { playerRole: PlayerRoleInfo | null }) {
   const roleName = ROLE_NAMES[myRole];
   const description = ROLE_DESCRIPTIONS[myRole];
 
+  const advice = ROLE_ADVICE[myRole];
+
   return (
     <div className="rounded-xl border-2 border-primary/50 bg-primary/5 p-4 space-y-2">
       <h3 className="text-sm font-semibold text-primary">내 역할</h3>
-      <p className="text-lg font-bold text-primary">{roleName}</p>
+      <div className="flex items-center gap-2">
+        <p className="text-lg font-bold text-primary">{roleName}</p>
+        {advice && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="text-primary hover:text-primary/80 transition-colors p-0.5 rounded hover:bg-primary/10"
+                aria-label="행동 어드바이스"
+              >
+                <Lightbulb className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="max-w-[280px] whitespace-pre-line text-left leading-relaxed py-2.5"
+            >
+              <span className="font-semibold">💡 내가 취하면 좋은 행동</span>
+              <span className="block mt-1.5">{advice}</span>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
       <p className="text-xs text-muted-foreground">
         {myTeam === "GOOD" ? "선의 세력" : "악의 세력"}
       </p>
@@ -98,9 +147,9 @@ export function Rulebook({
             <section>
               <h3 className="text-sm font-semibold mb-2">게임 개요</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                아발론은 선의 세력과 악의 세력이 대결하는 숨겨진 역할 게임입니다.
-                선은 5번의 원정 중 3번 성공해야 하고, 악은 원정 실패나 투표 부결을
-                통해 승리합니다.
+                아발론은 선의 세력과 악의 세력이 대결하는 숨겨진 역할
+                게임입니다. 선은 5번의 원정 중 3번 성공해야 하고, 악은 원정
+                실패나 투표 부결을 통해 승리합니다.
               </p>
             </section>
 
@@ -125,18 +174,18 @@ export function Rulebook({
                   제안합니다.
                 </li>
                 <li>
-                  <strong>찬반 투표</strong>: 모든 플레이어가 제안된 팀에 찬성/반대
-                  투표. 과반수 찬성 시 원정 진행, 부결 시 원정대장이 넘어가고 부결
-                  카운트 +1.
+                  <strong>찬반 투표</strong>: 모든 플레이어가 제안된 팀에
+                  찬성/반대 투표. 과반수 찬성 시 원정 진행, 부결 시 원정대장이
+                  넘어가고 부결 카운트 +1.
                 </li>
                 <li>
-                  <strong>퀘스트 수행</strong>: 원정대원만 성공/실패 카드 제출. 선은
-                  성공만, 악은 성공 또는 실패 선택 가능. 7인 이상 4라운드는 실패
-                  2장 필요.
+                  <strong>퀘스트 수행</strong>: 원정대원만 성공/실패 카드 제출.
+                  선은 성공만, 악은 성공 또는 실패 선택 가능. 7인 이상 4라운드는
+                  실패 2장 필요.
                 </li>
                 <li>
-                  <strong>암살</strong>: 원정 3번 성공 시 암살자가 멀린 후보 1명을
-                  지목. 멀린이면 악 승리, 아니면 선 승리.
+                  <strong>암살</strong>: 원정 3번 성공 시 암살자가 멀린 후보
+                  1명을 지목. 멀린이면 악 승리, 아니면 선 승리.
                 </li>
               </ol>
             </section>
@@ -170,10 +219,12 @@ export function Rulebook({
             </section>
 
             <section>
-              <h3 className="text-sm font-semibold mb-2">원정 인원 (라운드별)</h3>
+              <h3 className="text-sm font-semibold mb-2">
+                원정 인원 (라운드별)
+              </h3>
               <p className="text-sm text-muted-foreground">
-                5인: 2-3-2-3-3 / 6인: 2-3-4-3-4 / 7인: 2-3-3-4-4 / 8인: 3-4-4-5-5 /
-                9~10인: 3-4-4-5-5
+                5인: 2-3-2-3-3 / 6인: 2-3-4-3-4 / 7인: 2-3-3-4-4 / 8인:
+                3-4-4-5-5 / 9~10인: 3-4-4-5-5
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 ※ 7인 이상 4라운드: 실패 2장 있어야 원정 실패
