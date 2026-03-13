@@ -17,6 +17,25 @@ const ROLE_NAMES: Record<string, string> = {
   MINION: "악의 하수인",
 };
 
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+  MERLIN:
+    "선의 세력. 밤에 모든 악의 세력을 볼 수 있음 (단, 모드레드는 제외). 원정 3번 성공 시 암살자가 멀린을 지목하면 악의 역전승.",
+  PERCIVAL:
+    "선의 세력. 밤에 멀린과 모르가나 중 한 명을 볼 수 있음 (둘 다 '멀린 후보'로 표시됨). 진짜 멀린을 찾아 보호해야 함.",
+  LOYAL:
+    "선의 세력. 특별한 능력 없음. 원정에 참가 시 성공 카드만 제출 가능. 악을 찾아 원정을 성공시키는 것이 목표.",
+  ASSASSIN:
+    "악의 세력. 악 동료들을 모두 알고 있음. 원정 3번 성공 후 멀린을 정확히 지목하면 악의 역전승.",
+  MORGANNA:
+    "악의 세력. 퍼시벌에게 멀린 후보로 보임 (멀린과 함께). 악 동료들을 모두 알고 있음.",
+  MORDRED:
+    "악의 세력. 멀린에게 보이지 않음 (멀린은 모드레드를 악으로 알 수 없음). 악 동료들을 모두 알고 있음.",
+  OBERON:
+    "악의 세력. 다른 악에게 보이지 않고, 다른 악도 모름. 혼자 행동해야 함.",
+  MINION:
+    "악의 세력. 악 동료들을 모두 알고 있음. 원정에 참가 시 실패 카드 제출 가능.",
+};
+
 interface PhaseNightProps {
   nightVision: NightVision;
   players: AvalonPlayerPublic[];
@@ -59,6 +78,11 @@ export function PhaseNight({
           <p className="text-sm text-muted-foreground">
             {myTeam === "GOOD" ? "선의 세력" : "악의 세력"}
           </p>
+          {ROLE_DESCRIPTIONS[myRole] && (
+            <p className="text-sm text-foreground pt-2 border-t border-border">
+              {ROLE_DESCRIPTIONS[myRole]}
+            </p>
+          )}
         </div>
 
         {knownEvil.length > 0 && (

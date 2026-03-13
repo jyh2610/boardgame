@@ -6,7 +6,7 @@ import {
   AvalonMultiplayerProvider,
   useAvalonMultiplayer,
 } from "@/lib/avalon-multiplayer-context";
-import { fetchSlots, claimPlayer } from "@/lib/avalon-api";
+import { fetchSlots, claimPlayer, createGame } from "@/lib/avalon-api";
 import { QuestTrack } from "@/components/avalon/QuestTrack";
 import { RejectCount } from "@/components/avalon/RejectCount";
 import { BoardStatus } from "@/components/avalon/BoardStatus";
@@ -76,14 +76,6 @@ function PlayerPicker({
       router.replace("/resistans_avalon");
     }
   }, [isFull, loading, router]);
-
-  if (isFull && !loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground">방이 가득 찼습니다. 로비로 이동합니다...</div>
-      </div>
-    );
-  }
 
   const handleEnter = async () => {
     if (!selectedId || claiming) return;
@@ -376,6 +368,13 @@ function AvalonGameInner({
                 winner={state.winner}
                 playerId={playerId}
                 myTeam={state.nightVision?.myTeam}
+                onRestart={async () => {
+                  const { gameId: newGameId } = await createGame(
+                    state.config.playerCount,
+                    state.players.map((p) => p.name),
+                  );
+                  router.push(`/resistans_avalon/${newGameId}?p=${playerId}`);
+                }}
               />
             )}
 
