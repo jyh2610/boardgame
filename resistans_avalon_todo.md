@@ -75,7 +75,13 @@ create policy "Allow all for avalon_games"
 - [x] ASSASSINATION - 암살자 멀린 지목 UI
 - [x] END - 승리/패배 결과 화면
 
-### 7. 공통 컴포넌트
+### 7. 채팅
+
+- [x] `avalon_chat` 테이블 (Supabase) - `supabase/migrations/20250313000000_create_avalon_chat.sql`
+- [x] `GET/POST /api/avalon/games/[id]/chat` - 채팅 API
+- [x] `GameChat` 컴포넌트 - 게임 화면 우측 패널
+
+### 8. 공통 컴포넌트
 
 - [x] 퀘스트 트랙 (1~5라운드 성공/실패 표시)
 - [x] 부결 카운트 표시

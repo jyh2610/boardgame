@@ -17,6 +17,7 @@ import { PhaseVoting } from "@/components/avalon/PhaseVoting";
 import { PhaseQuesting } from "@/components/avalon/PhaseQuesting";
 import { PhaseAssassination } from "@/components/avalon/PhaseAssassination";
 import { PhaseEnd } from "@/components/avalon/PhaseEnd";
+import { GameChat } from "@/components/avalon/GameChat";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Sword } from "lucide-react";
 
@@ -210,7 +211,7 @@ function AvalonGameInner({
           </div>
         </aside>
 
-        <section className="flex-1 flex items-start justify-center overflow-auto py-4">
+        <section className="flex-1 flex items-start justify-center overflow-auto py-4 min-w-0">
           <div className="w-full max-w-2xl">
             {state.phase === "NIGHT" && state.nightVision && (
               <PhaseNight
@@ -292,6 +293,17 @@ function AvalonGameInner({
               )}
           </div>
         </section>
+
+        <aside className="lg:w-72 shrink-0 w-full lg:max-w-[288px]">
+          <GameChat
+            gameId={gameId}
+            playerId={playerId}
+            playerName={
+              state.players.find((p) => p.id === playerId)?.name ?? "플레이어"
+            }
+            className="h-[320px] lg:h-[400px]"
+          />
+        </aside>
       </main>
     </div>
   );
