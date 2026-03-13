@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 import { getAvalonSession, updateAvalonSession } from "@/lib/avalon-sessions";
+import { getConnectedPlayerIds } from "@/lib/avalon-connected";
 import {
+  createAvalonGame,
   finishNightPhase,
   proposeTeam,
   submitVote,
@@ -54,6 +56,39 @@ export async function POST(
     let result: { success: boolean; state: AvalonMatchState; error?: string };
 
     switch (action) {
+      case "ready": {
+        if (state.phase !== "LOBBY") {
+          return NextResponse.json(
+            { error: "로비 단계가 아닙니다." },
+            { status: 400 },
+          );
+        }
+        const readyIds = state.readyPlayerIds ?? [];
+        if (readyIds.includes(playerId)) {
+          result = { success: true, state };
+          break;
+        }
+        const newReadyIds = [...readyIds, playerId];
+        const connected = await getConnectedPlayerIds(id);
+        const playerCount = state.config.playerCount;
+        const allConnected = connected.length >= playerCount;
+        const allReady = newReadyIds.length >= playerCount;
+
+        if (allConnected && allReady) {
+          const playerIds = state.players.map((p) => p.id);
+          const playerNames = state.players.map((p) => p.name);
+          nextState = createAvalonGame(playerIds, playerNames);
+          result = { success: true, state: nextState };
+        } else {
+          nextState = {
+            ...state,
+            readyPlayerIds: newReadyIds,
+          };
+          result = { success: true, state: nextState };
+        }
+        break;
+      }
+
       case "finishNight":
         nextState = finishNightPhase(state);
         result = { success: true, state: nextState };

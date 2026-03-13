@@ -11,6 +11,7 @@ import { QuestTrack } from "@/components/avalon/QuestTrack";
 import { RejectCount } from "@/components/avalon/RejectCount";
 import { BoardStatus } from "@/components/avalon/BoardStatus";
 import { PlayerList } from "@/components/avalon/PlayerList";
+import { PhaseLobby } from "@/components/avalon/PhaseLobby";
 import { PhaseNight } from "@/components/avalon/PhaseNight";
 import { PhaseTeamBuilding } from "@/components/avalon/PhaseTeamBuilding";
 import { PhaseVoting } from "@/components/avalon/PhaseVoting";
@@ -303,6 +304,17 @@ function AvalonGameInner({
 
         <section className="flex-1 flex items-start justify-center overflow-auto py-4 min-w-0">
           <div className="w-full max-w-2xl">
+            {state.phase === "LOBBY" && (
+              <PhaseLobby
+                players={state.players}
+                connectedPlayerIds={state.connectedPlayerIds ?? []}
+                readyPlayerIds={state.readyPlayerIds ?? []}
+                playerId={playerId}
+                onReady={() => mp.act({ action: "ready" })}
+                isActing={mp.isActing}
+              />
+            )}
+
             {state.phase === "NIGHT" && state.nightVision && (
               <PhaseNight
                 nightVision={state.nightVision}
@@ -378,7 +390,8 @@ function AvalonGameInner({
               />
             )}
 
-            {state.phase !== "NIGHT" &&
+            {state.phase !== "LOBBY" &&
+              state.phase !== "NIGHT" &&
               state.phase !== "TEAM_BUILDING" &&
               state.phase !== "VOTING" &&
               state.phase !== "QUESTING" &&

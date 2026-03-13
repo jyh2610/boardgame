@@ -29,7 +29,7 @@ export default function ResistansAvalonLobbyPage() {
   const [names, setNames] = useState<string[]>(
     Array(10)
       .fill(null)
-      .map((_, i) => `플레이어 ${i + 1}`)
+      .map((_, i) => `플레이어 ${i + 1}`),
   );
 
   // 방 참가 상태
@@ -39,9 +39,11 @@ export default function ResistansAvalonLobbyPage() {
     setCreateError(null);
     setIsCreating(true);
     try {
-      const trimmedNames = names.slice(0, playerCount).map((n) => n.trim() || `플레이어`);
+      const trimmedNames = names
+        .slice(0, playerCount)
+        .map((n) => n.trim() || `플레이어`);
       const { gameId, code } = await createGame(playerCount, trimmedNames);
-      router.push(`/resistans_avalon/${gameId}?p=0`);
+      router.push(`/resistans_avalon/${gameId}`);
     } catch (e) {
       setCreateError(e instanceof Error ? e.message : "게임 생성 실패");
     } finally {
@@ -93,12 +95,10 @@ export default function ResistansAvalonLobbyPage() {
         <Tabs defaultValue="create" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="create" className="flex items-center gap-2">
-              <Users className="size-4" />
-              방 만들기
+              <Users className="size-4" />방 만들기
             </TabsTrigger>
             <TabsTrigger value="join" className="flex items-center gap-2">
-              <LogIn className="size-4" />
-              방 참가
+              <LogIn className="size-4" />방 참가
             </TabsTrigger>
           </TabsList>
 
@@ -151,7 +151,7 @@ export default function ResistansAvalonLobbyPage() {
                   onClick={handleCreate}
                   disabled={isCreating}
                 >
-                  {isCreating ? "생성 중..." : "게임 시작"}
+                  {isCreating ? "생성 중..." : "방 만들기"}
                 </Button>
               </CardContent>
             </Card>

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 import { getAvalonSession, getAvalonCodeByGameId } from "@/lib/avalon-sessions";
+import { getConnectedPlayerIds } from "@/lib/avalon-connected";
 import {
   getPublicStateForPlayer,
   getNightVision,
@@ -33,11 +34,20 @@ export async function GET(
     const publicState = getPublicStateForPlayer(state, playerId);
     const nightVision =
       state.phase === "NIGHT" ? getNightVision(state, playerId) : null;
-    const playerRole = getPlayerRoleInfo(state, playerId);
+    const playerRole =
+      state.phase !== "LOBBY" ? getPlayerRoleInfo(state, playerId) : null;
     const roomCode = await getAvalonCodeByGameId(id);
+    const connectedPlayerIds =
+      state.phase === "LOBBY" ? await getConnectedPlayerIds(id) : undefined;
 
     return NextResponse.json(
-      { ...publicState, nightVision, playerRole, roomCode },
+      {
+        ...publicState,
+        nightVision,
+        playerRole,
+        roomCode,
+        connectedPlayerIds,
+      },
       {
         headers: {
           "Cache-Control": "no-store, no-cache, must-revalidate",

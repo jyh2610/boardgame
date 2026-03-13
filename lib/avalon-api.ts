@@ -29,6 +29,7 @@ export interface AvalonPublicState {
   canSubmitQuestCard: boolean;
   canAssassinate: boolean;
   winner: Team | null;
+  readyPlayerIds?: string[];
 }
 
 /** playerId로 fetchGame 호출 시 반환 타입 */
@@ -36,11 +37,14 @@ export interface AvalonGameStateForPlayer extends AvalonPublicState {
   nightVision: NightVision | null;
   playerRole: PlayerRoleInfo | null;
   roomCode: string | null;
+  readyPlayerIds?: string[];
+  connectedPlayerIds?: string[]; // LOBBY 단계에서 입장한 플레이어 id
 }
 
 // ============ 액션 타입 ============
 
 export type AvalonAction =
+  | { action: "ready" }
   | { action: "finishNight" }
   | { action: "proposeTeam"; payload: { teamMemberIds: string[] } }
   | { action: "vote"; payload: { vote: "APPROVE" | "REJECT" } }
@@ -67,9 +71,7 @@ export async function createGame(
 }
 
 /** 슬롯 목록 조회 (점유 여부 포함) */
-export async function fetchSlots(
-  gameId: string
-): Promise<{
+export async function fetchSlots(gameId: string): Promise<{
   slots: { id: string; name: string; isTaken: boolean }[];
   isFull: boolean;
   playerCount: number;
@@ -78,7 +80,7 @@ export async function fetchSlots(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(
-      (err as { error?: string }).error || "슬롯 정보를 불러올 수 없습니다."
+      (err as { error?: string }).error || "슬롯 정보를 불러올 수 없습니다.",
     );
   }
   return res.json();
@@ -88,7 +90,7 @@ export async function fetchSlots(
 export async function claimPlayer(
   gameId: string,
   playerId: string,
-  displayName: string
+  displayName: string,
 ): Promise<void> {
   const res = await fetch(`${API}/${gameId}/claim`, {
     method: "POST",
