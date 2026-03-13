@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   AvalonMultiplayerProvider,
@@ -139,6 +139,8 @@ function GameContent() {
   return <AvalonGameInner gameId={gameId} playerId={playerId} />;
 }
 
+const CHAT_API = "/api/avalon/games";
+
 function AvalonGameInner({
   gameId,
   playerId,
@@ -150,6 +152,19 @@ function AvalonGameInner({
   const mp = useAvalonMultiplayer();
   const state = mp?.state;
   const [copied, setCopied] = useState(false);
+  const joinNotifiedRef = useRef(false);
+
+  // 유저 접속 시 채팅에 접속 알림 전송 (최초 1회)
+  useEffect(() => {
+    if (!state || !playerId || joinNotifiedRef.current) return;
+    const playerName = state.players.find((p) => p.id === playerId)?.name ?? "플레이어";
+    joinNotifiedRef.current = true;
+    fetch(`${CHAT_API}/${gameId}/chat/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, playerName }),
+    }).catch(() => {});
+  }, [gameId, playerId, state]);
 
   if (!state || !mp) return null;
 

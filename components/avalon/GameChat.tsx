@@ -133,7 +133,20 @@ export function GameChat({
           <p className="text-sm text-destructive text-center py-2">{error}</p>
         )}
         {messages.map((m) => {
+          const isSystem = m.playerId === "system";
           const isMe = m.playerId === playerId;
+          if (isSystem) {
+            return (
+              <div
+                key={m.id}
+                className="flex justify-center py-1"
+              >
+                <span className="text-xs text-muted-foreground">
+                  {m.message}
+                </span>
+              </div>
+            );
+          }
           return (
             <div
               key={m.id}

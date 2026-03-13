@@ -72,3 +72,34 @@ export async function sendChatMessage(
     createdAt: data.created_at,
   };
 }
+
+/** 접속 알림 메시지 전송 (시스템 메시지) */
+export async function sendJoinNotification(
+  gameId: string,
+  playerId: string,
+  playerName: string
+): Promise<ChatMessage> {
+  const { data, error } = await supabase
+    .from("avalon_chat")
+    .insert({
+      game_id: gameId,
+      player_id: "system",
+      player_name: "시스템",
+      message: `${playerName}님이 접속했습니다.`,
+    })
+    .select("id, game_id, player_id, player_name, message, created_at")
+    .single();
+
+  if (error) {
+    throw new Error(`접속 알림 전송 실패: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    gameId: data.game_id,
+    playerId: data.player_id,
+    playerName: data.player_name,
+    message: data.message,
+    createdAt: data.created_at,
+  };
+}
