@@ -19,6 +19,7 @@ import { PhaseQuesting } from "@/components/avalon/PhaseQuesting";
 import { PhaseAssassination } from "@/components/avalon/PhaseAssassination";
 import { PhaseEnd } from "@/components/avalon/PhaseEnd";
 import { GameChat } from "@/components/avalon/GameChat";
+import { Rulebook } from "@/components/avalon/Rulebook";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Sword } from "lucide-react";
 
@@ -198,6 +199,7 @@ function AvalonGameInner({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
+          <Rulebook playerRole={state.playerRole ?? null} />
           <QuestTrack
             questTrack={state.questTrack}
             currentRound={state.currentRound}

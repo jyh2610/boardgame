@@ -2,6 +2,7 @@ import type {
   AvalonMatchState,
   AvalonConfig,
   NightVision,
+  PlayerRoleInfo,
   Phase,
   QuestResult,
   QuestCard,
@@ -33,6 +34,7 @@ export interface AvalonPublicState {
 /** playerId로 fetchGame 호출 시 반환 타입 */
 export interface AvalonGameStateForPlayer extends AvalonPublicState {
   nightVision: NightVision | null;
+  playerRole: PlayerRoleInfo | null;
   roomCode: string | null;
 }
 

@@ -284,6 +284,27 @@ export function getNightVision(state: AvalonMatchState, playerId: string): Night
   };
 }
 
+/** 플레이어 역할 정보 (룰북 등에서 항상 표시용) */
+export interface PlayerRoleInfo {
+  myRole: Role;
+  myTeam: Team;
+}
+
+/**
+ * 플레이어의 역할 정보 반환 (게임 중 항상 알 수 있는 정보)
+ */
+export function getPlayerRoleInfo(
+  state: AvalonMatchState,
+  playerId: string
+): PlayerRoleInfo | null {
+  const player = state.players.find((p) => p.id === playerId);
+  if (!player) return null;
+  return {
+    myRole: player.role,
+    myTeam: player.team,
+  };
+}
+
 /**
  * Phase 1: 원정대 구성 - 원정대장이 팀 제안
  */

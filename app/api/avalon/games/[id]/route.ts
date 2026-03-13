@@ -6,6 +6,7 @@ import { getAvalonSession, getAvalonCodeByGameId } from "@/lib/avalon-sessions";
 import {
   getPublicStateForPlayer,
   getNightVision,
+  getPlayerRoleInfo,
   type AvalonMatchState,
 } from "@/lib/avalon-engine";
 
@@ -27,15 +28,16 @@ export async function GET(
     );
   }
 
-  // playerId가 있으면 해당 플레이어용 공개 상태 + 밤 단계 정보
+  // playerId가 있으면 해당 플레이어용 공개 상태 + 밤 단계 정보 + 역할 정보
   if (playerId) {
     const publicState = getPublicStateForPlayer(state, playerId);
     const nightVision =
       state.phase === "NIGHT" ? getNightVision(state, playerId) : null;
+    const playerRole = getPlayerRoleInfo(state, playerId);
     const roomCode = await getAvalonCodeByGameId(id);
 
     return NextResponse.json(
-      { ...publicState, nightVision, roomCode },
+      { ...publicState, nightVision, playerRole, roomCode },
       {
         headers: {
           "Cache-Control": "no-store, no-cache, must-revalidate",
