@@ -140,7 +140,7 @@ export function Rulebook({
         <SheetHeader className="shrink-0 px-4 py-3 border-b">
           <SheetTitle>레지스탕스 아발론 룰북</SheetTitle>
         </SheetHeader>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-4 space-y-6">
             <MyRoleSection playerRole={playerRole} />
 
