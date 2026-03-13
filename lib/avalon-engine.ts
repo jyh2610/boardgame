@@ -420,6 +420,71 @@ export function submitVote(
 }
 
 /**
+ * 여러 클라이언트의 동시 투표를 병합한 뒤 결과 처리
+ * (race condition 방지: 저장 직전 최신 상태와 병합)
+ */
+export function mergeVotesAndProcess(
+  baseState: AvalonMatchState,
+  incomingState: AvalonMatchState
+): AvalonMatchState {
+  if (baseState.phase !== 'VOTING' || incomingState.phase !== 'VOTING') {
+    return incomingState;
+  }
+
+  const mergedPlayers = baseState.players.map((p) => {
+    const incoming = incomingState.players.find((x) => x.id === p.id);
+    const vote = incoming?.vote ?? p.vote;
+    return { ...p, vote };
+  });
+
+  const allVoted = mergedPlayers.every((p) => p.vote !== null);
+  if (!allVoted) {
+    return { ...baseState, players: mergedPlayers };
+  }
+
+  const approveCount = mergedPlayers.filter((p) => p.vote === 'APPROVE').length;
+  const totalPlayers = mergedPlayers.length;
+  const majority = totalPlayers / 2;
+
+  if (approveCount > majority) {
+    return {
+      ...baseState,
+      players: mergedPlayers,
+      phase: 'QUESTING',
+      rejectTrack: 0,
+    };
+  }
+
+  const leaderIndex = baseState.players.findIndex((p) => p.isLeader);
+  const nextLeaderIndex = (leaderIndex + 1) % baseState.players.length;
+  const newRejectTrack = baseState.rejectTrack + 1;
+
+  const playersWithNewLeader = mergedPlayers.map((p, i) => ({
+    ...p,
+    isLeader: i === nextLeaderIndex,
+    vote: null,
+  }));
+
+  if (newRejectTrack >= 5) {
+    return {
+      ...baseState,
+      players: playersWithNewLeader,
+      phase: 'END',
+      rejectTrack: newRejectTrack,
+      winner: 'EVIL',
+    };
+  }
+
+  return {
+    ...baseState,
+    players: playersWithNewLeader,
+    phase: 'TEAM_BUILDING',
+    proposedTeam: [],
+    rejectTrack: newRejectTrack,
+  };
+}
+
+/**
  * Phase 3: 퀘스트 카드 제출
  */
 export function submitQuestCard(

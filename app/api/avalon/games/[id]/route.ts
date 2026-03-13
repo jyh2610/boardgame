@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getAvalonSession,
-  getAvalonCodeByGameId,
-} from "@/lib/avalon-sessions";
+
+export const dynamic = "force-dynamic";
+
+import { getAvalonSession, getAvalonCodeByGameId } from "@/lib/avalon-sessions";
 import {
   getPublicStateForPlayer,
   getNightVision,
@@ -12,7 +12,7 @@ import {
 /** 아발론 게임 상태 조회 */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
@@ -23,7 +23,7 @@ export async function GET(
   if (!state) {
     return NextResponse.json(
       { error: "게임을 찾을 수 없습니다." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -34,13 +34,18 @@ export async function GET(
       state.phase === "NIGHT" ? getNightVision(state, playerId) : null;
     const roomCode = await getAvalonCodeByGameId(id);
 
-    return NextResponse.json({
-      ...publicState,
-      nightVision,
-      roomCode,
-    });
+    return NextResponse.json(
+      { ...publicState, nightVision, roomCode },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      },
+    );
   }
 
   // playerId 없으면 전체 상태 (관전용, 역할 등 비공개 정보 포함 - 개발/디버그용)
-  return NextResponse.json(state);
+  return NextResponse.json(state, {
+    headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+  });
 }

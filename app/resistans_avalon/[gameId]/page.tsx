@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   AvalonMultiplayerProvider,
@@ -10,6 +10,7 @@ import { fetchGame } from "@/lib/avalon-api";
 import type { AvalonMatchState } from "@/lib/avalon-engine";
 import { QuestTrack } from "@/components/avalon/QuestTrack";
 import { RejectCount } from "@/components/avalon/RejectCount";
+import { BoardStatus } from "@/components/avalon/BoardStatus";
 import { PlayerList } from "@/components/avalon/PlayerList";
 import { PhaseNight } from "@/components/avalon/PhaseNight";
 import { PhaseTeamBuilding } from "@/components/avalon/PhaseTeamBuilding";
@@ -187,7 +188,7 @@ function AvalonGameInner({
             currentRound={state.currentRound}
             questSizes={state.config.questSizes}
           />
-          <RejectCount rejectTrack={state.rejectTrack} />
+          <RejectCount rejectTrack={state.rejectTrack} phase={state.phase} />
         </div>
 
         <button
@@ -198,6 +199,11 @@ function AvalonGameInner({
           나가기
         </button>
       </header>
+
+      <BoardStatus
+        players={state.players}
+        proposedTeam={state.proposedTeam}
+      />
 
       <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-auto min-h-0">
         <aside className="lg:w-64 shrink-0">

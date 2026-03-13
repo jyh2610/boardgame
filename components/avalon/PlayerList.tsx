@@ -53,13 +53,19 @@ export function PlayerList({
               {p.name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium truncate">{p.name}</span>
                 {p.isLeader && (
-                  <Crown className="size-4 text-primary shrink-0" />
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/40">
+                    <Crown className="size-3" />
+                    대장
+                  </span>
                 )}
                 {isOnQuest && (
-                  <Sword className="size-4 text-primary shrink-0" />
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/40">
+                    <Sword className="size-3" />
+                    원정대
+                  </span>
                 )}
               </div>
               {p.vote !== null && (

@@ -112,7 +112,7 @@ export function GameChat({
     <div
       className={cn(
         "flex flex-col rounded-lg border border-border bg-card overflow-hidden",
-        className
+        className,
       )}
     >
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/50">
@@ -122,7 +122,7 @@ export function GameChat({
 
       <div
         ref={scrollRef}
-        className="flex-1 min-h-[200px] max-h-[320px] overflow-y-auto p-3 space-y-2"
+        className="flex-1 min-h-[200px] max-h-[320px] overflow-y-auto p-3 space-y-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30"
       >
         {messages.length === 0 && !error && (
           <p className="text-sm text-muted-foreground text-center py-6">
@@ -137,16 +137,13 @@ export function GameChat({
           return (
             <div
               key={m.id}
-              className={cn(
-                "flex flex-col gap-0.5",
-                isMe && "items-end"
-              )}
+              className={cn("flex flex-col gap-0.5", isMe && "items-end")}
             >
               <div className="flex items-baseline gap-2">
                 <span
                   className={cn(
                     "text-xs font-medium",
-                    isMe ? "text-primary" : "text-muted-foreground"
+                    isMe ? "text-primary" : "text-muted-foreground",
                   )}
                 >
                   {m.playerName}
@@ -160,7 +157,7 @@ export function GameChat({
                   "text-sm px-3 py-1.5 rounded-lg max-w-[85%] break-words",
                   isMe
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
+                    : "bg-muted text-foreground",
                 )}
               >
                 {m.message}

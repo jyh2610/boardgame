@@ -90,7 +90,7 @@ export async function fetchGame(
   const url = playerId
     ? `${API}/${gameId}?playerId=${encodeURIComponent(playerId)}`
     : `${API}/${gameId}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
 import { getAvalonSession, updateAvalonSession } from "@/lib/avalon-sessions";
 import {
   finishNightPhase,
   proposeTeam,
   submitVote,
+  mergeVotesAndProcess,
   submitQuestCard,
   submitAssassination,
   type AvalonMatchState,
@@ -11,7 +15,7 @@ import {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const state = await getAvalonSession(id);
@@ -19,7 +23,7 @@ export async function POST(
   if (!state) {
     return NextResponse.json(
       { error: "게임을 찾을 수 없습니다." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -34,7 +38,7 @@ export async function POST(
     if (!playerId || typeof playerId !== "string") {
       return NextResponse.json(
         { error: "playerId가 필요합니다." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,7 +46,7 @@ export async function POST(
     if (!playerExists) {
       return NextResponse.json(
         { error: "유효하지 않은 플레이어입니다." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -60,7 +64,7 @@ export async function POST(
         if (!Array.isArray(teamMemberIds)) {
           return NextResponse.json(
             { error: "teamMemberIds 배열이 필요합니다." },
-            { status: 400 }
+            { status: 400 },
           );
         }
         result = proposeTeam(state, playerId, teamMemberIds);
@@ -72,10 +76,19 @@ export async function POST(
         if (vote !== "APPROVE" && vote !== "REJECT") {
           return NextResponse.json(
             { error: "vote는 APPROVE 또는 REJECT여야 합니다." },
-            { status: 400 }
+            { status: 400 },
           );
         }
-        result = submitVote(state, playerId, vote);
+        const voteResult = submitVote(state, playerId, vote);
+        if (!voteResult.success) {
+          result = voteResult;
+        } else {
+          const freshState = await getAvalonSession(id);
+          nextState = freshState
+            ? mergeVotesAndProcess(freshState, voteResult.state)
+            : voteResult.state;
+          result = { success: true, state: nextState };
+        }
         break;
       }
 
@@ -84,7 +97,7 @@ export async function POST(
         if (card !== "SUCCESS" && card !== "FAIL") {
           return NextResponse.json(
             { error: "card는 SUCCESS 또는 FAIL이어야 합니다." },
-            { status: 400 }
+            { status: 400 },
           );
         }
         result = submitQuestCard(state, playerId, card);
@@ -96,7 +109,7 @@ export async function POST(
         if (!targetId || typeof targetId !== "string") {
           return NextResponse.json(
             { error: "targetId가 필요합니다." },
-            { status: 400 }
+            { status: 400 },
           );
         }
         result = submitAssassination(state, playerId, targetId);
@@ -106,14 +119,14 @@ export async function POST(
       default:
         return NextResponse.json(
           { error: `알 수 없는 액션: ${action}` },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
     if (!result.success) {
       return NextResponse.json(
         { error: result.error ?? "액션 실패" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -122,9 +135,6 @@ export async function POST(
     return NextResponse.json(result.state);
   } catch (e) {
     console.error(e);
-    return NextResponse.json(
-      { error: "액션 처리 실패" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "액션 처리 실패" }, { status: 500 });
   }
 }
