@@ -86,6 +86,8 @@ export interface AvalonMatchState {
   assassinationTarget: string | null; // 암살자가 지목한 플레이어 id
   winner: Team | null; // 게임 종료 시 승리 진영
   readyPlayerIds?: string[]; // LOBBY 단계에서 준비 완료한 플레이어 id
+  nightConfirmPlayerIds?: string[]; // NIGHT 단계에서 확인 완료한 플레이어 id
+  lastVoteResult?: { approveCount: number; rejectCount: number; passed: boolean };
 }
 
 // ============ 상수 및 설정 ============
@@ -288,13 +290,28 @@ export function createAvalonGame(
 }
 
 /**
- * 밤 단계 → 팀 빌딩으로 전환
+ * 밤 단계 - 플레이어 확인 추가. 전원 확인 시 팀 빌딩으로 전환
  */
-export function finishNightPhase(state: AvalonMatchState): AvalonMatchState {
+export function confirmNightPhase(
+  state: AvalonMatchState,
+  playerId: string,
+): AvalonMatchState {
   if (state.phase !== "NIGHT") return state;
+  const confirmIds = state.nightConfirmPlayerIds ?? [];
+  if (confirmIds.includes(playerId)) return state;
+  const newConfirmIds = [...confirmIds, playerId];
+  const playerCount = state.config.playerCount;
+  const allConfirmed = newConfirmIds.length >= playerCount;
+
+  if (allConfirmed) {
+    return {
+      ...state,
+      phase: "TEAM_BUILDING",
+    };
+  }
   return {
     ...state,
-    phase: "TEAM_BUILDING",
+    nightConfirmPlayerIds: newConfirmIds,
   };
 }
 
@@ -483,8 +500,10 @@ export function submitVote(
 
   // 투표 결과 집계
   const approveCount = players.filter((p) => p.vote === "APPROVE").length;
+  const rejectCount = players.filter((p) => p.vote === "REJECT").length;
   const totalPlayers = players.length;
   const majority = totalPlayers / 2;
+  const lastVoteResult = { approveCount, rejectCount, passed: approveCount > majority };
 
   if (approveCount > majority) {
     // 가결 → 퀘스트 수행으로
@@ -495,6 +514,7 @@ export function submitVote(
         players,
         phase: "QUESTING",
         rejectTrack: 0, // 원정 출발 시 부결 카운트 초기화
+        lastVoteResult,
       },
     };
   }
@@ -520,6 +540,7 @@ export function submitVote(
         phase: "END",
         rejectTrack: newRejectTrack,
         winner: "EVIL",
+        lastVoteResult,
       },
     };
   }
@@ -532,6 +553,7 @@ export function submitVote(
       phase: "TEAM_BUILDING",
       proposedTeam: [],
       rejectTrack: newRejectTrack,
+      lastVoteResult,
     },
   };
 }
@@ -560,8 +582,10 @@ export function mergeVotesAndProcess(
   }
 
   const approveCount = mergedPlayers.filter((p) => p.vote === "APPROVE").length;
+  const rejectCount = mergedPlayers.filter((p) => p.vote === "REJECT").length;
   const totalPlayers = mergedPlayers.length;
   const majority = totalPlayers / 2;
+  const lastVoteResult = { approveCount, rejectCount, passed: approveCount > majority };
 
   if (approveCount > majority) {
     return {
@@ -569,6 +593,7 @@ export function mergeVotesAndProcess(
       players: mergedPlayers,
       phase: "QUESTING",
       rejectTrack: 0,
+      lastVoteResult,
     };
   }
 
@@ -589,6 +614,7 @@ export function mergeVotesAndProcess(
       phase: "END",
       rejectTrack: newRejectTrack,
       winner: "EVIL",
+      lastVoteResult,
     };
   }
 
@@ -598,6 +624,7 @@ export function mergeVotesAndProcess(
     phase: "TEAM_BUILDING",
     proposedTeam: [],
     rejectTrack: newRejectTrack,
+    lastVoteResult,
   };
 }
 
@@ -744,6 +771,7 @@ export function submitQuestCard(
       questTrack: newQuestTrack,
       questResultsShuffled: shuffled,
       proposedTeam: [],
+      lastVoteResult: undefined, // next round
     },
   };
 }
@@ -808,6 +836,8 @@ export function getPublicStateForPlayer(
   winner: Team | null;
   assassinationTarget: string | null;
   readyPlayerIds?: string[];
+  nightConfirmPlayerIds?: string[];
+  lastVoteResult?: { approveCount: number; rejectCount: number; passed: boolean };
 } {
   const proposedSet = new Set(state.proposedTeam);
   const votesRevealed =
@@ -851,6 +881,9 @@ export function getPublicStateForPlayer(
     winner: state.winner,
     assassinationTarget: state.assassinationTarget,
     readyPlayerIds: state.phase === "LOBBY" ? state.readyPlayerIds : undefined,
+    nightConfirmPlayerIds:
+      state.phase === "NIGHT" ? state.nightConfirmPlayerIds : undefined,
+    lastVoteResult: state.lastVoteResult,
   };
 }
 

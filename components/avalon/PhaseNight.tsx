@@ -4,7 +4,8 @@ import type { NightVision } from "@/lib/avalon-engine";
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Moon } from "lucide-react";
+import { Moon, CheckCircle2, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const ROLE_NAMES: Record<string, string> = {
   MERLIN: "멀린",
@@ -39,7 +40,9 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 interface PhaseNightProps {
   nightVision: NightVision;
   players: AvalonPlayerPublic[];
-  onFinish: () => Promise<void>;
+  nightConfirmPlayerIds: string[];
+  playerId: string;
+  onConfirm: () => Promise<void>;
   isActing: boolean;
 }
 
@@ -50,7 +53,9 @@ function idToName(players: AvalonPlayerPublic[], id: string): string {
 export function PhaseNight({
   nightVision,
   players,
-  onFinish,
+  nightConfirmPlayerIds,
+  playerId,
+  onConfirm,
   isActing,
 }: PhaseNightProps) {
   const {
@@ -61,6 +66,11 @@ export function PhaseNight({
     knownEvilTeammates,
   } = nightVision;
 
+  const confirmSet = new Set(nightConfirmPlayerIds);
+  const playerCount = players.length;
+  const allConfirmed = nightConfirmPlayerIds.length >= playerCount;
+  const amIConfirmed = confirmSet.has(playerId);
+
   return (
     <Card className="max-w-lg mx-auto">
       <CardHeader>
@@ -68,6 +78,9 @@ export function PhaseNight({
           <Moon className="size-6 text-primary" />
           <CardTitle>밤 - 역할 확인</CardTitle>
         </div>
+        <p className="text-sm text-muted-foreground">
+          역할을 확인한 뒤 확인 버튼을 눌러주세요. 전원 확인 시 게임이 진행됩니다.
+        </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
@@ -122,13 +135,68 @@ export function PhaseNight({
           </div>
         )}
 
+        <div className="space-y-2">
+          <p className="text-sm font-medium">확인 현황 ({nightConfirmPlayerIds.length}/{playerCount})</p>
+          <div className="flex flex-col gap-2">
+            {players.map((p) => {
+              const isConfirmed = confirmSet.has(p.id);
+              const isMe = p.id === playerId;
+
+              return (
+                <div
+                  key={p.id}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                    isMe && "border-primary bg-primary/10",
+                    !isConfirmed && "opacity-80"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "size-10 rounded-full flex items-center justify-center text-lg font-bold border-2",
+                      isMe ? "border-primary bg-primary/20" : "border-border bg-muted"
+                    )}
+                  >
+                    {p.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium truncate block">{p.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {isConfirmed ? "확인 완료" : "확인 대기"}
+                    </span>
+                  </div>
+                  <div className="shrink-0">
+                    {isConfirmed ? (
+                      <CheckCircle2 className="size-5 text-green-500" />
+                    ) : (
+                      <Clock className="size-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {!allConfirmed && (
+          <p className="text-sm text-amber-600 dark:text-amber-500 text-center">
+            {playerCount - nightConfirmPlayerIds.length}명이 아직 확인하지 않았습니다.
+          </p>
+        )}
+
+        {allConfirmed && (
+          <p className="text-sm text-green-600 dark:text-green-500 text-center font-medium">
+            마지막 플레이어가 확인을 누르면 게임이 진행됩니다!
+          </p>
+        )}
+
         <Button
           className="w-full"
           size="lg"
-          onClick={onFinish}
-          disabled={isActing}
+          onClick={onConfirm}
+          disabled={isActing || amIConfirmed}
         >
-          {isActing ? "확인 중..." : "확인 완료"}
+          {isActing ? "확인 중..." : amIConfirmed ? "확인 완료" : "확인"}
         </Button>
       </CardContent>
     </Card>

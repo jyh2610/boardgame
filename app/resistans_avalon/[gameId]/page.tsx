@@ -18,6 +18,7 @@ import { PhaseVoting } from "@/components/avalon/PhaseVoting";
 import { PhaseQuesting } from "@/components/avalon/PhaseQuesting";
 import { PhaseAssassination } from "@/components/avalon/PhaseAssassination";
 import { PhaseEnd } from "@/components/avalon/PhaseEnd";
+import { VoteResultBanner } from "@/components/avalon/VoteResultBanner";
 import { GameChat } from "@/components/avalon/GameChat";
 import { Rulebook } from "@/components/avalon/Rulebook";
 import { Button } from "@/components/ui/button";
@@ -304,6 +305,15 @@ function AvalonGameInner({
 
         <section className="flex-1 flex items-start justify-center overflow-auto py-4 min-w-0">
           <div className="w-full max-w-2xl">
+            {state.lastVoteResult &&
+              (state.phase === "QUESTING" ||
+                state.phase === "TEAM_BUILDING") && (
+                <VoteResultBanner
+                  approveCount={state.lastVoteResult.approveCount}
+                  rejectCount={state.lastVoteResult.rejectCount}
+                  passed={state.lastVoteResult.passed}
+                />
+              )}
             {state.phase === "LOBBY" && (
               <PhaseLobby
                 players={state.players}
@@ -319,7 +329,9 @@ function AvalonGameInner({
               <PhaseNight
                 nightVision={state.nightVision}
                 players={state.players}
-                onFinish={() => mp.act({ action: "finishNight" })}
+                nightConfirmPlayerIds={state.nightConfirmPlayerIds ?? []}
+                playerId={playerId}
+                onConfirm={() => mp.act({ action: "confirmNight" })}
                 isActing={mp.isActing}
               />
             )}
@@ -349,6 +361,7 @@ function AvalonGameInner({
                 hasVoted={state.hasVoted}
                 onVote={(vote) => mp.act({ action: "vote", payload: { vote } })}
                 isActing={mp.isActing}
+                lastVoteResult={state.lastVoteResult}
               />
             )}
 

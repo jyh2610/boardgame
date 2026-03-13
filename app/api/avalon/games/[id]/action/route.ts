@@ -6,7 +6,7 @@ import { getAvalonSession, updateAvalonSession } from "@/lib/avalon-sessions";
 import { getConnectedPlayerIds } from "@/lib/avalon-connected";
 import {
   createAvalonGame,
-  finishNightPhase,
+  confirmNightPhase,
   proposeTeam,
   submitVote,
   mergeVotesAndProcess,
@@ -89,10 +89,17 @@ export async function POST(
         break;
       }
 
-      case "finishNight":
-        nextState = finishNightPhase(state);
+      case "confirmNight": {
+        if (state.phase !== "NIGHT") {
+          return NextResponse.json(
+            { error: "밤 단계가 아닙니다." },
+            { status: 400 },
+          );
+        }
+        nextState = confirmNightPhase(state, playerId);
         result = { success: true, state: nextState };
         break;
+      }
 
       case "proposeTeam": {
         const teamMemberIds = payload?.teamMemberIds as string[] | undefined;

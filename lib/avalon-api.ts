@@ -32,6 +32,8 @@ export interface AvalonPublicState {
   winner: Team | null;
   assassinationTarget: string | null;
   readyPlayerIds?: string[];
+  nightConfirmPlayerIds?: string[];
+  lastVoteResult?: { approveCount: number; rejectCount: number; passed: boolean };
 }
 
 /** playerId로 fetchGame 호출 시 반환 타입 */
@@ -40,6 +42,7 @@ export interface AvalonGameStateForPlayer extends AvalonPublicState {
   playerRole: PlayerRoleInfo | null;
   roomCode: string | null;
   readyPlayerIds?: string[];
+  nightConfirmPlayerIds?: string[];
   connectedPlayerIds?: string[]; // LOBBY 단계에서 입장한 플레이어 id
 }
 
@@ -47,7 +50,7 @@ export interface AvalonGameStateForPlayer extends AvalonPublicState {
 
 export type AvalonAction =
   | { action: "ready" }
-  | { action: "finishNight" }
+  | { action: "confirmNight" }
   | { action: "proposeTeam"; payload: { teamMemberIds: string[] } }
   | { action: "vote"; payload: { vote: "APPROVE" | "REJECT" } }
   | { action: "questCard"; payload: { card: "SUCCESS" | "FAIL" } }
