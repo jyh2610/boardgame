@@ -12,9 +12,9 @@ const _notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "보드게임 - 부루마블 & 레지스탕스 아발론",
+  title: "보드게임 - 부루마블 & 조선비사",
   description:
-    "부루마블, 레지스탕스 아발론 등 보드게임을 온라인으로 즐기세요!",
+    "부루마블, 조선비사(정조 시대 규장각 vs 노론 벽파 배경 숨겨진 역할 게임) 등 보드게임을 온라인으로 즐기세요!",
   generator: "v0.app",
 };
 

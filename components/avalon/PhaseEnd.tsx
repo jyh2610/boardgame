@@ -2,22 +2,12 @@
 
 import { useState } from "react";
 import type { Role, Team } from "@/lib/avalon-engine";
+import { ROLE_NAMES } from "@/lib/avalon-theme";
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Trophy, Swords, RotateCcw, Skull } from "lucide-react";
-
-const ROLE_NAMES: Record<Role, string> = {
-  MERLIN: "멀린",
-  PERCIVAL: "퍼시벌",
-  LOYAL: "충직한 시민",
-  ASSASSIN: "암살자",
-  MORGANNA: "모르가나",
-  MORDRED: "모드레드",
-  OBERON: "오베론",
-  MINION: "악의 하수인",
-};
 
 interface PhaseEndProps {
   winner: Team;
@@ -67,7 +57,7 @@ export function PhaseEnd({
             <Swords className="size-12 text-destructive" />
           )}
           <CardTitle className="text-2xl">
-            {isGoodWin ? "선의 승리!" : "악의 승리!"}
+            {isGoodWin ? "규장각의 승리!" : "노론 벽파의 승리!"}
           </CardTitle>
         </div>
       </CardHeader>
@@ -82,7 +72,7 @@ export function PhaseEnd({
           <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4">
             <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
               <Skull className="size-4 text-destructive" />
-              암살자가 지목한 플레이어
+              존현각 자객이 지목한 플레이어
             </h3>
             <div className="flex items-center justify-between gap-3 py-2 px-3 rounded-md bg-background border border-border">
               <span className="font-medium">{targetPlayer.name}</span>

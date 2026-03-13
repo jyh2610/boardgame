@@ -258,7 +258,7 @@ function AvalonGameInner({
           <div className="flex items-center gap-2 min-w-0">
             <Sword className="size-5 sm:size-6 text-primary shrink-0" />
             <h1 className="text-base sm:text-lg font-black text-primary tracking-widest truncate">
-              아발론
+              조선비사
             </h1>
             {mp.roomCode && (
               <button
@@ -324,8 +324,8 @@ function AvalonGameInner({
         <section className="flex-1 flex items-start justify-center overflow-auto py-3 sm:py-4 min-w-0 order-1 lg:order-none">
           <div className="w-full max-w-2xl">
             {state.lastVoteResult &&
-              (state.phase === "QUESTING" ||
-                state.phase === "TEAM_BUILDING") && (
+              (state.phase === "SIMYANG" ||
+                state.phase === "SIMYANGDAN_SETUP") && (
                 <VoteResultBanner
                   approveCount={state.lastVoteResult.approveCount}
                   rejectCount={state.lastVoteResult.rejectCount}
@@ -354,7 +354,7 @@ function AvalonGameInner({
               />
             )}
 
-            {state.phase === "TEAM_BUILDING" && (
+            {state.phase === "SIMYANGDAN_SETUP" && (
               <PhaseTeamBuilding
                 players={state.players}
                 proposedTeam={state.proposedTeam}
@@ -383,7 +383,7 @@ function AvalonGameInner({
               />
             )}
 
-            {state.phase === "QUESTING" && (
+            {state.phase === "SIMYANG" && (
               <PhaseQuesting
                 players={state.players}
                 proposedTeam={state.proposedTeam}
@@ -396,7 +396,7 @@ function AvalonGameInner({
               />
             )}
 
-            {state.phase === "ASSASSINATION" && (
+            {state.phase === "JAGAP_PHASE" && (
               <PhaseAssassination
                 players={state.players}
                 playerId={playerId}
@@ -427,10 +427,10 @@ function AvalonGameInner({
 
             {state.phase !== "LOBBY" &&
               state.phase !== "NIGHT" &&
-              state.phase !== "TEAM_BUILDING" &&
+              state.phase !== "SIMYANGDAN_SETUP" &&
               state.phase !== "VOTING" &&
-              state.phase !== "QUESTING" &&
-              state.phase !== "ASSASSINATION" &&
+              state.phase !== "SIMYANG" &&
+              state.phase !== "JAGAP_PHASE" &&
               state.phase !== "END" && (
                 <div className="text-center text-muted-foreground py-12">
                   대기 중...

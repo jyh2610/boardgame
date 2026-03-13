@@ -91,12 +91,11 @@ export default function ResistansAvalonLobbyPage() {
         <header className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
             <Sword className="size-10 text-primary" />
-            <h1 className="text-3xl font-black tracking-tight">
-              레지스탕스 아발론
-            </h1>
+            <h1 className="text-3xl font-black tracking-tight">조선비사</h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            선과 악의 대결, 숨겨진 역할 추리 게임
+            정조 시대, 규장각 vs 노론 벽파의 대결을 배경으로 한 숨겨진 역할 추리
+            게임
           </p>
         </header>
 

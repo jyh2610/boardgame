@@ -59,7 +59,7 @@ export default function GameSelectPage() {
             </span>
           </motion.button>
 
-          {/* 레지스탕스 아발론 */}
+          {/* 조선비사 */}
           <motion.button
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -73,10 +73,11 @@ export default function GameSelectPage() {
             </div>
             <div className="relative space-y-1">
               <h2 className="text-2xl font-black text-primary tracking-wide">
-                레지스탕스 아발론
+                조선비사
               </h2>
               <p className="text-sm text-muted-foreground">
-                선과 악의 대결, 숨겨진 역할 추리 게임
+                정조 시대, 규장각 vs 노론 벽파의 대결을 배경으로 한 숨겨진 역할
+                추리 게임
               </p>
             </div>
             <span className="relative text-sm font-bold text-primary/80 group-hover:text-primary">

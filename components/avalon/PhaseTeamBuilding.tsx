@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TERMS } from "@/lib/avalon-theme";
 import { PlayerList } from "./PlayerList";
 import { ProposedTeam } from "./ProposedTeam";
 import { Users } from "lucide-react";
@@ -52,10 +53,10 @@ export function PhaseTeamBuilding({
       <CardHeader>
         <div className="flex items-center gap-2">
           <Users className="size-6 text-primary" />
-          <CardTitle>원정대 구성</CardTitle>
+          <CardTitle>사명단 구성</CardTitle>
         </div>
         <p className="text-sm text-muted-foreground">
-          {questSize}명을 선택하여 원정대를 구성하세요.
+          {questSize}명을 선택하여 {TERMS.missionTeam}을 구성하세요.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -80,7 +81,7 @@ export function PhaseTeamBuilding({
               onClick={handleSubmit}
               disabled={selected.size !== questSize || isActing}
             >
-              {isActing ? "제안 중..." : "원정대 제안"}
+              {isActing ? "제안 중..." : `${TERMS.missionTeam} 제안`}
             </Button>
           </>
         )}
@@ -88,8 +89,8 @@ export function PhaseTeamBuilding({
         {(proposedTeam.length > 0 || !canProposeTeam) && (
           <p className="text-sm text-muted-foreground text-center">
             {proposedTeam.length > 0
-              ? "원정대가 제안되었습니다. 모든 플레이어의 투표를 기다리는 중..."
-              : "원정대장이 원정대를 구성하는 중..."}
+              ? `${TERMS.missionTeam}이 제안되었습니다. 모든 플레이어의 투표를 기다리는 중...`
+              : `${TERMS.missionLeader}이(가) ${TERMS.missionTeam}을 구성하는 중...`}
           </p>
         )}
       </CardContent>

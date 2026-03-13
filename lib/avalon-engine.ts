@@ -1,6 +1,6 @@
 /**
- * 레지스탕스 아발론 (The Resistance: Avalon) 게임 코어 엔진
- * 기획서 기반 순수 게임 로직 - 서버/클라이언트 공용
+ * 조선비사 - 조선시대 인물 배경 숨겨진 역할 게임
+ * (The Resistance: Avalon 규칙 기반)
  */
 
 // ============ 타입 정의 ============
@@ -8,22 +8,22 @@
 export type Team = "GOOD" | "EVIL";
 
 export type Role =
-  | "MERLIN" // 멀린 - 선
-  | "PERCIVAL" // 퍼시벌 - 선
-  | "LOYAL" // 일반 선
-  | "ASSASSIN" // 암살자 - 악
-  | "MORGANNA" // 모르가나 - 악
-  | "MORDRED" // 모드레드 - 악 (멀린에게 안 보임)
-  | "OBERON" // 오베론 - 악 (악에게 안 보임)
-  | "MINION"; // 일반 악
+  | "JUNGJO" // 정조 - 규장각
+  | "JUNGYAKYONG" // 정약용 - 규장각
+  | "GYUJANGGAK" // 규장각 각신
+  | "JAGAP" // 존현각 자객 - 노론 벽파
+  | "SIMHWANJI" // 심환지 - 노론 벽파
+  | "JEONGSUNWANGHU" // 정순왕후 - 노론 벽파 (정조에게 안 보임)
+  | "HONGGUKYEONG" // 홍국영 - 노론 벽파 (다른 노론에게 안 보임)
+  | "NORON_BYOKPA"; // 노론 벽파
 
 export type Phase =
-  | "LOBBY" // 대기실 - 모두 입장 후 준비 누르면 시작
+  | "LOBBY" // 대기실
   | "NIGHT" // 밤 - 역할 확인
-  | "TEAM_BUILDING" // 원정대 구성
+  | "SIMYANGDAN_SETUP" // 사명단 구성
   | "VOTING" // 찬반 투표
-  | "QUESTING" // 퀘스트 수행
-  | "ASSASSINATION" // 암살 단계
+  | "SIMYANG" // 사명 수행
+  | "JAGAP_PHASE" // 자객 지목 단계
   | "END"; // 게임 종료
 
 export type Vote = "APPROVE" | "REJECT";
@@ -144,62 +144,62 @@ const AVALON_CONFIGS: Record<number, AvalonConfig> = {
 
 // 역할 풀 (인원수별)
 const ROLE_POOLS: Record<number, Role[]> = {
-  5: ["MERLIN", "PERCIVAL", "LOYAL", "ASSASSIN", "MINION"],
-  6: ["MERLIN", "PERCIVAL", "LOYAL", "LOYAL", "ASSASSIN", "MINION"],
+  5: ["JUNGJO", "JUNGYAKYONG", "GYUJANGGAK", "JAGAP", "NORON_BYOKPA"],
+  6: ["JUNGJO", "JUNGYAKYONG", "GYUJANGGAK", "GYUJANGGAK", "JAGAP", "NORON_BYOKPA"],
   7: [
-    "MERLIN",
-    "PERCIVAL",
-    "LOYAL",
-    "LOYAL",
-    "ASSASSIN",
-    "MORGANNA",
-    "MORDRED",
+    "JUNGJO",
+    "JUNGYAKYONG",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "JAGAP",
+    "SIMHWANJI",
+    "JEONGSUNWANGHU",
   ],
   8: [
-    "MERLIN",
-    "PERCIVAL",
-    "LOYAL",
-    "LOYAL",
-    "LOYAL",
-    "ASSASSIN",
-    "MORGANNA",
-    "MORDRED",
+    "JUNGJO",
+    "JUNGYAKYONG",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "JAGAP",
+    "SIMHWANJI",
+    "JEONGSUNWANGHU",
   ],
   9: [
-    "MERLIN",
-    "PERCIVAL",
-    "LOYAL",
-    "LOYAL",
-    "LOYAL",
-    "LOYAL",
-    "ASSASSIN",
-    "MORGANNA",
-    "OBERON",
+    "JUNGJO",
+    "JUNGYAKYONG",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "JAGAP",
+    "SIMHWANJI",
+    "HONGGUKYEONG",
   ],
   10: [
-    "MERLIN",
-    "PERCIVAL",
-    "LOYAL",
-    "LOYAL",
-    "LOYAL",
-    "LOYAL",
-    "ASSASSIN",
-    "MORGANNA",
-    "MORDRED",
-    "OBERON",
+    "JUNGJO",
+    "JUNGYAKYONG",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "GYUJANGGAK",
+    "JAGAP",
+    "SIMHWANJI",
+    "JEONGSUNWANGHU",
+    "HONGGUKYEONG",
   ],
 };
 
 // 역할 → 팀 매핑
 const ROLE_TO_TEAM: Record<Role, Team> = {
-  MERLIN: "GOOD",
-  PERCIVAL: "GOOD",
-  LOYAL: "GOOD",
-  ASSASSIN: "EVIL",
-  MORGANNA: "EVIL",
-  MORDRED: "EVIL",
-  OBERON: "EVIL",
-  MINION: "EVIL",
+  JUNGJO: "GOOD",
+  JUNGYAKYONG: "GOOD",
+  GYUJANGGAK: "GOOD",
+  JAGAP: "EVIL",
+  SIMHWANJI: "EVIL",
+  JEONGSUNWANGHU: "EVIL",
+  HONGGUKYEONG: "EVIL",
+  NORON_BYOKPA: "EVIL",
 };
 
 // ============ 유틸리티 ============
@@ -238,7 +238,7 @@ export function createAvalonLobby(
   const players: AvalonPlayer[] = playerIds.map((id, i) => ({
     id,
     name: names[i] ?? `플레이어 ${i + 1}`,
-    role: "LOYAL", // 로비에서는 미사용 (표시 안 함)
+    role: "GYUJANGGAK", // 로비에서는 미사용 (표시 안 함)
     team: "GOOD",
     isLeader: false,
     vote: null,
@@ -320,8 +320,8 @@ export function confirmNightPhase(
 
   if (allConfirmed) {
     return addLog(
-      { ...state, phase: "TEAM_BUILDING" },
-      "모든 플레이어가 역할을 확인했습니다. 1라운드 원정대 구성을 시작합니다.",
+      { ...state, phase: "SIMYANGDAN_SETUP" },
+      "모든 플레이어가 역할을 확인했습니다. 1라운드 사명단 구성을 시작합니다.",
     );
   }
   return {
@@ -340,7 +340,7 @@ export function getNightVision(
   const player = state.players.find((p) => p.id === playerId);
   if (!player) {
     return {
-      myRole: "LOYAL",
+      myRole: "GYUJANGGAK",
       myTeam: "GOOD",
       knownEvil: [],
       knownMerlinCandidates: [],
@@ -351,9 +351,9 @@ export function getNightVision(
   const { role, team } = player;
 
   // 멀린: 모든 악을 알 수 있음. 단, 모드레드는 선으로 보임
-  if (role === "MERLIN") {
+  if (role === "JUNGJO") {
     const knownEvil = state.players
-      .filter((p) => p.team === "EVIL" && p.role !== "MORDRED")
+      .filter((p) => p.team === "EVIL" && p.role !== "JEONGSUNWANGHU")
       .map((p) => p.id);
     return {
       myRole: role,
@@ -365,10 +365,10 @@ export function getNightVision(
   }
 
   // 퍼시벌: 멀린과 모르가나를 알 수 있음 (둘 다 '멀린'으로 보임)
-  if (role === "PERCIVAL") {
-    const merlin = state.players.find((p) => p.role === "MERLIN");
-    const morganna = state.players.find((p) => p.role === "MORGANNA");
-    const candidates = [merlin?.id, morganna?.id].filter(Boolean) as string[];
+  if (role === "JUNGYAKYONG") {
+    const jungjo = state.players.find((p) => p.role === "JUNGJO");
+    const simhwanji = state.players.find((p) => p.role === "SIMHWANJI");
+    const candidates = [jungjo?.id, simhwanji?.id].filter(Boolean) as string[];
     return {
       myRole: role,
       myTeam: team,
@@ -382,7 +382,7 @@ export function getNightVision(
   if (team === "EVIL") {
     const knownEvilTeammates = state.players
       .filter(
-        (p) => p.team === "EVIL" && p.role !== "OBERON" && p.id !== playerId,
+        (p) => p.team === "EVIL" && p.role !== "HONGGUKYEONG" && p.id !== playerId,
       )
       .map((p) => p.id);
     return {
@@ -433,8 +433,8 @@ export function proposeTeam(
   leaderId: string,
   teamMemberIds: string[],
 ): { success: boolean; state: AvalonMatchState; error?: string } {
-  if (state.phase !== "TEAM_BUILDING") {
-    return { success: false, state, error: "원정대 구성 단계가 아닙니다." };
+  if (state.phase !== "SIMYANGDAN_SETUP") {
+    return { success: false, state, error: "사명단 구성 단계가 아닙니다." };
   }
 
   const leader = state.players.find((p) => p.id === leaderId);
@@ -442,7 +442,7 @@ export function proposeTeam(
     return {
       success: false,
       state,
-      error: "원정대장만 팀을 제안할 수 있습니다.",
+      error: "사명장만 팀을 제안할 수 있습니다.",
     };
   }
 
@@ -451,7 +451,7 @@ export function proposeTeam(
     return {
       success: false,
       state,
-      error: `원정대는 정확히 ${requiredSize}명이어야 합니다.`,
+      error: `사명단은 정확히 ${requiredSize}명이어야 합니다.`,
     };
   }
 
@@ -476,7 +476,7 @@ export function proposeTeam(
   const teamNames = teamMemberIds
     .map((id) => state.players.find((p) => p.id === id)?.name ?? "?")
     .join(", ");
-  const logMsg = `원정대장 ${leaderName}이(가) 원정대를 제안했습니다: ${teamNames}`;
+  const logMsg = `사명장 ${leaderName}이(가) 사명단을 제안했습니다: ${teamNames}`;
 
   return {
     success: true,
@@ -542,8 +542,8 @@ export function submitVote(
         {
           ...state,
           players,
-          phase: "QUESTING",
-          rejectTrack: 0, // 원정 출발 시 부결 카운트 초기화
+          phase: "SIMYANG",
+          rejectTrack: 0, // 사명 출발 시 부결 카운트 초기화
           lastVoteResult,
         },
         voteLog,
@@ -551,7 +551,7 @@ export function submitVote(
     };
   }
 
-  // 부결 → 원정대장 넘기고 Reject Track +1
+  // 부결 → 사명장 넘기고 Reject Track +1
   const leaderIndex = state.players.findIndex((p) => p.isLeader);
   const nextLeaderIndex = (leaderIndex + 1) % state.players.length;
   const newRejectTrack = state.rejectTrack + 1;
@@ -575,7 +575,7 @@ export function submitVote(
           winner: "EVIL",
           lastVoteResult,
         },
-        "부결 5회 - 악의 승리!",
+        "부결 5회 - 노론 벽파의 승리!",
       ),
     };
   }
@@ -586,7 +586,7 @@ export function submitVote(
       {
         ...state,
         players: playersWithNewLeader,
-        phase: "TEAM_BUILDING",
+        phase: "SIMYANGDAN_SETUP",
         proposedTeam: [],
         rejectTrack: newRejectTrack,
         lastVoteResult,
@@ -635,7 +635,7 @@ export function mergeVotesAndProcess(
       {
         ...baseState,
         players: mergedPlayers,
-        phase: "QUESTING",
+        phase: "SIMYANG",
         rejectTrack: 0,
         lastVoteResult,
       },
@@ -663,7 +663,7 @@ export function mergeVotesAndProcess(
         winner: "EVIL",
         lastVoteResult,
       },
-      "부결 5회 - 악의 승리!",
+      "부결 5회 - 역적의 승리!",
     );
   }
 
@@ -671,7 +671,7 @@ export function mergeVotesAndProcess(
     {
       ...baseState,
       players: playersWithNewLeader,
-      phase: "TEAM_BUILDING",
+      phase: "SIMYANGDAN_SETUP",
       proposedTeam: [],
       rejectTrack: newRejectTrack,
       lastVoteResult,
@@ -688,7 +688,7 @@ export function submitQuestCard(
   playerId: string,
   card: QuestCard,
 ): { success: boolean; state: AvalonMatchState; error?: string } {
-  if (state.phase !== "QUESTING") {
+  if (state.phase !== "SIMYANG") {
     return { success: false, state, error: "퀘스트 수행 단계가 아닙니다." };
   }
 
@@ -701,7 +701,7 @@ export function submitQuestCard(
     return {
       success: false,
       state,
-      error: "원정대원만 퀘스트 카드를 제출할 수 있습니다.",
+      error: "사명단원만 카드를 제출할 수 있습니다.",
     };
   }
 
@@ -752,7 +752,7 @@ export function submitQuestCard(
 
   const newQuestTrack = [...state.questTrack];
   newQuestTrack[state.currentRound - 1] = questSuccess ? "SUCCESS" : "FAIL";
-  const roundLog = `라운드 ${state.currentRound} 퀘스트: ${questSuccess ? "성공!" : "실패!"}`;
+  const roundLog = `라운드 ${state.currentRound} 사명: ${questSuccess ? "성공!" : "실패!"}`;
 
   const successCount = newQuestTrack.filter((r) => r === "SUCCESS").length;
   const failRoundCount = newQuestTrack.filter((r) => r === "FAIL").length;
@@ -785,7 +785,7 @@ export function submitQuestCard(
             proposedTeam: [],
             winner: "EVIL",
           },
-          "퀘스트 3번 실패 - 악의 승리!",
+          "사명 3번 실패 - 노론 벽파의 승리!",
         ),
         roundLog,
       ),
@@ -807,12 +807,12 @@ export function submitQuestCard(
           {
             ...state,
             players: resetPlayers,
-            phase: "ASSASSINATION",
+            phase: "JAGAP_PHASE",
             questTrack: newQuestTrack,
             questResultsShuffled: shuffled,
             proposedTeam: [],
           },
-          "퀘스트 3번 성공 - 암살 단계로 진입",
+          "사명 3번 성공 - 암살 단계로 진입",
         ),
         roundLog,
       ),
@@ -834,7 +834,7 @@ export function submitQuestCard(
     isLeader: i === nextLeaderIndex,
   }));
 
-  const nextRoundLog = `${nextRound}라운드 원정대 구성을 시작합니다.`;
+  const nextRoundLog = `${nextRound}라운드 사명단 구성을 시작합니다.`;
 
   return {
     success: true,
@@ -844,7 +844,7 @@ export function submitQuestCard(
           ...state,
           players: finalPlayers,
           currentRound: nextRound,
-          phase: "TEAM_BUILDING",
+          phase: "SIMYANGDAN_SETUP",
           questTrack: newQuestTrack,
           questResultsShuffled: shuffled,
           proposedTeam: [],
@@ -865,12 +865,12 @@ export function submitAssassination(
   assassinId: string,
   targetId: string,
 ): { success: boolean; state: AvalonMatchState; error?: string } {
-  if (state.phase !== "ASSASSINATION") {
+  if (state.phase !== "JAGAP_PHASE") {
     return { success: false, state, error: "암살 단계가 아닙니다." };
   }
 
   const assassin = state.players.find((p) => p.id === assassinId);
-  if (!assassin || assassin.role !== "ASSASSIN") {
+  if (!assassin || assassin.role !== "JAGAP") {
     return { success: false, state, error: "암살자만 지목할 수 있습니다." };
   }
 
@@ -879,11 +879,11 @@ export function submitAssassination(
     return { success: false, state, error: "유효하지 않은 타겟입니다." };
   }
 
-  const isMerlin = target.role === "MERLIN";
+  const isJungjo = target.role === "JUNGJO";
   const targetName = target.name;
-  const resultLog = isMerlin
-    ? "멀린 암살 성공 - 악의 승리!"
-    : "멀린 암살 실패 - 선의 승리!";
+  const resultLog = isJungjo
+    ? "정조 암살 성공 - 노론 벽파의 승리!"
+    : "정조 암살 실패 - 규장각의 승리!";
 
   return {
     success: true,
@@ -893,11 +893,11 @@ export function submitAssassination(
           ...state,
           phase: "END",
           assassinationTarget: targetId,
-          winner: isMerlin ? "EVIL" : "GOOD",
+          winner: isJungjo ? "EVIL" : "GOOD",
         },
         resultLog,
       ),
-      `암살자가 ${targetName}을(를) 지목했습니다.`,
+      `존현각 자객이 ${targetName}을(를) 지목했습니다.`,
     ),
   };
 }
@@ -956,12 +956,12 @@ export function getPublicStateForPlayer(
   const isLeader = leader?.id === playerId;
   const isOnQuest = proposedSet.has(playerId);
   const isAssassin =
-    state.players.find((p) => p.id === playerId)?.role === "ASSASSIN";
+    state.players.find((p) => p.id === playerId)?.role === "JAGAP";
   const hasVoted =
     state.phase === "VOTING" &&
     (state.players.find((p) => p.id === playerId)?.vote ?? null) !== null;
   const hasSubmittedQuestCard =
-    state.phase === "QUESTING" &&
+    state.phase === "SIMYANG" &&
     (state.players.find((p) => p.id === playerId)?.questCard ?? null) !== null;
 
   return {
@@ -973,13 +973,13 @@ export function getPublicStateForPlayer(
     proposedTeam: state.proposedTeam,
     players,
     questResultsShuffled: state.questResultsShuffled,
-    canProposeTeam: state.phase === "TEAM_BUILDING" && isLeader,
+    canProposeTeam: state.phase === "SIMYANGDAN_SETUP" && isLeader,
     canVote: state.phase === "VOTING",
     hasVoted,
     canSubmitQuestCard:
-      state.phase === "QUESTING" && isOnQuest && !hasSubmittedQuestCard,
+      state.phase === "SIMYANG" && isOnQuest && !hasSubmittedQuestCard,
     hasSubmittedQuestCard,
-    canAssassinate: state.phase === "ASSASSINATION" && isAssassin,
+    canAssassinate: state.phase === "JAGAP_PHASE" && isAssassin,
     winner: state.winner,
     assassinationTarget: state.assassinationTarget,
     readyPlayerIds: state.phase === "LOBBY" ? state.readyPlayerIds : undefined,

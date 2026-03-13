@@ -14,7 +14,7 @@ export function ProposedTeam({ proposedTeam, players }: ProposedTeamProps) {
   if (proposedTeam.length === 0) {
     return (
       <div className="text-sm text-muted-foreground py-4 text-center">
-        아직 원정대가 구성되지 않았습니다.
+        아직 사명단이 구성되지 않았습니다.
       </div>
     );
   }

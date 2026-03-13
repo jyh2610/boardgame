@@ -17,55 +17,45 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Lightbulb } from "lucide-react";
 import type { Role, Team } from "@/lib/avalon-engine";
 import type { PlayerRoleInfo } from "@/lib/avalon-engine";
-
-const ROLE_NAMES: Record<Role, string> = {
-  MERLIN: "멀린",
-  PERCIVAL: "퍼시벌",
-  LOYAL: "충직한 시민",
-  ASSASSIN: "암살자",
-  MORGANNA: "모르가나",
-  MORDRED: "모드레드",
-  OBERON: "오베론",
-  MINION: "악의 하수인",
-};
+import { GAME_TITLE, ROLE_NAMES, TERMS } from "@/lib/avalon-theme";
 
 const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  MERLIN:
-    "선의 세력. 밤에 모든 악의 세력을 볼 수 있음 (단, 모드레드는 제외). 원정 3번 성공 시 암살자가 멀린을 지목하면 악의 역전승.",
-  PERCIVAL:
-    "선의 세력. 밤에 멀린과 모르가나 중 한 명을 볼 수 있음 (둘 다 '멀린 후보'로 표시됨). 진짜 멀린을 찾아 보호해야 함.",
-  LOYAL:
-    "선의 세력. 특별한 능력 없음. 원정에 참가 시 성공 카드만 제출 가능. 악을 찾아 원정을 성공시키는 것이 목표.",
-  ASSASSIN:
-    "악의 세력. 악 동료들을 모두 알고 있음. 원정 3번 성공 후 멀린을 정확히 지목하면 악의 역전승.",
-  MORGANNA:
-    "악의 세력. 퍼시벌에게 멀린 후보로 보임 (멀린과 함께). 악 동료들을 모두 알고 있음.",
-  MORDRED:
-    "악의 세력. 멀린에게 보이지 않음 (멀린은 모드레드를 악으로 알 수 없음). 악 동료들을 모두 알고 있음.",
-  OBERON:
-    "악의 세력. 다른 악에게 보이지 않고, 다른 악도 모름. 혼자 행동해야 함.",
-  MINION:
-    "악의 세력. 악 동료들을 모두 알고 있음. 원정에 참가 시 실패 카드 제출 가능.",
+  JUNGJO:
+    "규장각. 밤에 노론 벽파를 모두 볼 수 있음 (단, 정순왕후는 제외). 사명 3번 성공 시 존현각 자객이 정조를 지목하면 노론 벽파의 역전승.",
+  JUNGYAKYONG:
+    "규장각. 밤에 정조와 심환지 중 한 명을 볼 수 있음 (둘 다 '정조 후보'로 표시됨). 진짜 정조를 찾아 보호해야 함.",
+  GYUJANGGAK:
+    "규장각. 특별한 능력 없음. 사명에 참가 시 성공 카드만 제출 가능. 노론 벽파를 찾아 사명을 성공시키는 것이 목표.",
+  JAGAP:
+    "노론 벽파. 동료들을 모두 알고 있음. 사명 3번 성공 후 정조를 정확히 지목하면 노론 벽파의 역전승.",
+  SIMHWANJI:
+    "노론 벽파. 정약용에게 정조 후보로 보임 (정조와 함께). 노론 동료들을 모두 알고 있음.",
+  JEONGSUNWANGHU:
+    "노론 벽파. 정조에게 보이지 않음 (정조는 정순왕후를 노론으로 알 수 없음). 노론 동료들을 모두 알고 있음.",
+  HONGGUKYEONG:
+    "노론 벽파. 다른 노론에게 보이지 않고, 다른 노론도 모름. 혼자 행동해야 함.",
+  NORON_BYOKPA:
+    "노론 벽파. 동료들을 모두 알고 있음. 사명에 참가 시 실패 카드 제출 가능.",
 };
 
 /** 역할별 행동 어드바이스 - 내가 취하면 좋은 행동 */
 const ROLE_ADVICE: Record<Role, string> = {
-  MERLIN:
-    "• 악을 알고 있으니 원정대에 악이 들어가지 않도록 채팅으로 은근히 유도하세요.\n• 너무 직접적으로 지목하면 암살 타겟이 됩니다. 애매하게 힌트만 주세요.\n• 투표 패턴을 보며 악을 추리하는 데 도움을 주세요.",
-  PERCIVAL:
-    "• 멀린 후보 둘 중 진짜 멀린을 찾아 그 사람 말을 따르세요.\n• 멀린이 암살당하지 않도록, 멀린 후보를 지나치게 드러내지 않게 조절하세요.\n• 악(모르가나)이 멀린 행세를 할 수 있으니 말과 행동을 꼼꼼히 비교하세요.",
-  LOYAL:
-    "• 투표·채팅 패턴을 보며 악을 추리하세요.\n• 원정대에 악이 섞였을 가능성이 있으면 반대표를 던지세요.\n• 퍼시벌·멀린의 힌트에 귀 기울이세요.",
-  ASSASSIN:
-    "• 원정에 참가하면 적절한 타이밍에 실패 카드를 넣으세요.\n• 선이 3승하면 멀린을 지목해야 하니, 채팅·투표 패턴으로 멀린을 추리하세요.\n• 악 동료들과 암묵적으로 협력하세요.",
-  MORGANNA:
-    "• 퍼시벌에게 멀린 후보로 보이니, 멀린 행세로 퍼시벌을 혼란시키세요.\n• 악 동료들과 협력해 원정 실패·투표 부결을 노리세요.\n• 암살 단계에서 암살자가 멀린을 고르는 데 도움을 주세요.",
-  MORDRED:
-    "• 멀린에게 안 보이므로 비교적 안전하게 행동할 수 있습니다.\n• 악 동료들과 협력하되, 선처럼 행동해 의심을 덜 받으세요.\n• 원정에 들어가면 전략적으로 실패 카드를 사용하세요.",
-  OBERON:
-    "• 다른 악을 모르니 혼자 판단해야 합니다. 투표·원정 패턴을 잘 읽으세요.\n• 악처럼 보이지 않게 행동하다가, 원정에 참가할 때만 실패를 넣으세요.\n• 선 쪽이 혼란스러워 보이면 그때 반대표를 활용하세요.",
-  MINION:
-    "• 악 동료들과 협력해 원정 실패·투표 부결을 노리세요.\n• 원정에 참가하면 타이밍을 보고 실패 카드를 제출하세요.\n• 선처럼 행동해 의심을 덜 받으세요.",
+  JUNGJO:
+    "• 노론 벽파를 알고 있으니 사명단에 노론이 들어가지 않도록 채팅으로 은근히 유도하세요.\n• 너무 직접적으로 지목하면 자객의 타겟이 됩니다. 애매하게 힌트만 주세요.\n• 투표 패턴을 보며 노론을 추리하는 데 도움을 주세요.",
+  JUNGYAKYONG:
+    "• 정조 후보 둘 중 진짜 정조를 찾아 그 사람 말을 따르세요.\n• 정조가 암살당하지 않도록, 정조 후보를 지나치게 드러내지 않게 조절하세요.\n• 노론(심환지)이 정조 행세를 할 수 있으니 말과 행동을 꼼꼼히 비교하세요.",
+  GYUJANGGAK:
+    "• 투표·채팅 패턴을 보며 노론 벽파를 추리하세요.\n• 사명단에 노론이 섞였을 가능성이 있으면 반대표를 던지세요.\n• 정약용·정조의 힌트에 귀 기울이세요.",
+  JAGAP:
+    "• 사명에 참가하면 적절한 타이밍에 실패 카드를 넣으세요.\n• 규장각이 3승하면 정조를 지목해야 하니, 채팅·투표 패턴으로 정조를 추리하세요.\n• 노론 동료들과 암묵적으로 협력하세요.",
+  SIMHWANJI:
+    "• 정약용에게 정조 후보로 보이니, 정조 행세로 정약용을 혼란시키세요.\n• 노론 동료들과 협력해 사명 실패·투표 부결을 노리세요.\n• 암살 단계에서 자객이 정조를 고르는 데 도움을 주세요.",
+  JEONGSUNWANGHU:
+    "• 정조에게 안 보이므로 비교적 안전하게 행동할 수 있습니다.\n• 노론 동료들과 협력하되, 규장각처럼 행동해 의심을 덜 받으세요.\n• 사명에 들어가면 전략적으로 실패 카드를 사용하세요.",
+  HONGGUKYEONG:
+    "• 다른 노론을 모르니 혼자 판단해야 합니다. 투표·사명 패턴을 잘 읽으세요.\n• 노론처럼 보이지 않게 행동하다가, 사명에 참가할 때만 실패를 넣으세요.\n• 규장각 쪽이 혼란스러워 보이면 그때 반대표를 활용하세요.",
+  NORON_BYOKPA:
+    "• 노론 동료들과 협력해 사명 실패·투표 부결을 노리세요.\n• 사명에 참가하면 타이밍을 보고 실패 카드를 제출하세요.\n• 규장각처럼 행동해 의심을 덜 받으세요.",
 };
 
 function MyRoleSection({ playerRole }: { playerRole: PlayerRoleInfo | null }) {
@@ -104,7 +94,7 @@ function MyRoleSection({ playerRole }: { playerRole: PlayerRoleInfo | null }) {
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {myTeam === "GOOD" ? "선의 세력" : "악의 세력"}
+        {myTeam === "GOOD" ? TERMS.goodForce : TERMS.evilForce}
       </p>
       <p className="text-sm text-foreground">{description}</p>
     </div>
@@ -138,7 +128,7 @@ export function Rulebook({
         className="w-full sm:max-w-md flex flex-col p-0"
       >
         <SheetHeader className="shrink-0 px-4 py-3 border-b">
-          <SheetTitle>레지스탕스 아발론 룰북</SheetTitle>
+          <SheetTitle>{GAME_TITLE} 룰북</SheetTitle>
         </SheetHeader>
         <ScrollArea className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-4 space-y-6">
@@ -147,18 +137,26 @@ export function Rulebook({
             <section>
               <h3 className="text-sm font-semibold mb-2">게임 개요</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                아발론은 선의 세력과 악의 세력이 대결하는 숨겨진 역할
-                게임입니다. 선은 5번의 원정 중 3번 성공해야 하고, 악은 원정
-                실패나 투표 부결을 통해 승리합니다.
+                조선비사는 정조 시대, 규장각(선)과 노론 벽파(악)의 대결을
+                배경으로 한 숨겨진 역할 게임입니다. 규장각은 5번의 사명 중 3번
+                성공해야 하고, 노론 벽파는 사명 실패나 투표 부결을 통해
+                승리합니다.
               </p>
             </section>
 
             <section>
               <h3 className="text-sm font-semibold mb-2">승리 조건</h3>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>선: 원정 3번 성공 후 암살에서 멀린이 살아남으면 승리</li>
-                <li>악: 원정 3번 실패, 또는 투표 5번 연속 부결 시 즉시 승리</li>
-                <li>악: 원정 3번 성공 후 암살자가 멀린을 지목하면 역전승</li>
+                <li>
+                  규장각: 사명 3번 성공 후 암살에서 정조가 살아남으면 승리
+                </li>
+                <li>
+                  노론 벽파: 사명 3번 실패, 또는 투표 5번 연속 부결 시 즉시 승리
+                </li>
+                <li>
+                  노론 벽파: 사명 3번 성공 후 존현각 자객이 정조를 지목하면
+                  역전승
+                </li>
               </ul>
             </section>
 
@@ -170,22 +168,22 @@ export function Rulebook({
                   확인합니다.
                 </li>
                 <li>
-                  <strong>원정대 구성</strong>: 원정대장이 지정된 인원만큼 팀을
+                  <strong>사명단 구성</strong>: 사명장이 지정된 인원만큼 팀을
                   제안합니다.
                 </li>
                 <li>
                   <strong>찬반 투표</strong>: 모든 플레이어가 제안된 팀에
-                  찬성/반대 투표. 과반수 찬성 시 원정 진행, 부결 시 원정대장이
+                  찬성/반대 투표. 과반수 찬성 시 사명 진행, 부결 시 사명장이
                   넘어가고 부결 카운트 +1.
                 </li>
                 <li>
-                  <strong>퀘스트 수행</strong>: 원정대원만 성공/실패 카드 제출.
-                  선은 성공만, 악은 성공 또는 실패 선택 가능. 7인 이상 4라운드는
-                  실패 2장 필요.
+                  <strong>사명 수행</strong>: 사명단원만 성공/실패 카드 제출.
+                  규장각은 성공만, 노론 벽파는 성공 또는 실패 선택 가능. 7인
+                  이상 4라운드는 실패 2장 필요.
                 </li>
                 <li>
-                  <strong>암살</strong>: 원정 3번 성공 시 암살자가 멀린 후보
-                  1명을 지목. 멀린이면 악 승리, 아니면 선 승리.
+                  <strong>암살</strong>: 사명 3번 성공 시 존현각 자객이 정조
+                  후보 1명을 지목. 정조면 노론 벽파 승리, 아니면 규장각 승리.
                 </li>
               </ol>
             </section>
@@ -195,14 +193,14 @@ export function Rulebook({
               <div className="space-y-3">
                 {(
                   [
-                    "MERLIN",
-                    "PERCIVAL",
-                    "LOYAL",
-                    "ASSASSIN",
-                    "MORGANNA",
-                    "MORDRED",
-                    "OBERON",
-                    "MINION",
+                    "JUNGJO",
+                    "JUNGYAKYONG",
+                    "GYUJANGGAK",
+                    "JAGAP",
+                    "SIMHWANJI",
+                    "JEONGSUNWANGHU",
+                    "HONGGUKYEONG",
+                    "NORON_BYOKPA",
                   ] as Role[]
                 ).map((role) => (
                   <div
@@ -220,14 +218,14 @@ export function Rulebook({
 
             <section>
               <h3 className="text-sm font-semibold mb-2">
-                원정 인원 (라운드별)
+                사명 인원 (라운드별)
               </h3>
               <p className="text-sm text-muted-foreground">
                 5인: 2-3-2-3-3 / 6인: 2-3-4-3-4 / 7인: 2-3-3-4-4 / 8인:
                 3-4-4-5-5 / 9~10인: 3-4-4-5-5
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                ※ 7인 이상 4라운드: 실패 2장 있어야 원정 실패
+                ※ 7인 이상 4라운드: 실패 2장 있어야 사명 실패
               </p>
             </section>
           </div>

@@ -20,7 +20,7 @@ export function QuestTrack({
   return (
     <div className="flex items-center gap-0.5 sm:gap-1">
       <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground mr-1.5 shrink-0 hidden sm:inline">
-        퀘스트
+        사명
       </span>
       {ROUND_LABELS.map((label, i) => {
         const result = questTrack[i] ?? null;

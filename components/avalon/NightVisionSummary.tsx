@@ -2,6 +2,7 @@
 
 import type { NightVision } from "@/lib/avalon-engine";
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
+import { ROLE_NAMES, TERMS } from "@/lib/avalon-theme";
 import {
   Sheet,
   SheetContent,
@@ -11,17 +12,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Moon } from "lucide-react";
-
-const ROLE_NAMES: Record<string, string> = {
-  MERLIN: "멀린",
-  PERCIVAL: "퍼시벌",
-  LOYAL: "충직한 시민",
-  ASSASSIN: "암살자",
-  MORGANNA: "모르가나",
-  MORDRED: "모드레드",
-  OBERON: "오베론",
-  MINION: "악의 하수인",
-};
 
 function idToName(players: AvalonPlayerPublic[], id: string): string {
   return players.find((p) => p.id === id)?.name ?? `플레이어 ${id}`;
@@ -73,14 +63,14 @@ export function NightVisionSummary({
               {ROLE_NAMES[myRole] ?? myRole}
             </p>
             <p className="text-sm text-muted-foreground">
-              {myTeam === "GOOD" ? "선의 세력" : "악의 세력"}
+              {myTeam === "GOOD" ? TERMS.goodForce : TERMS.evilForce}
             </p>
           </div>
 
           {knownEvil.length > 0 && (
             <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
               <p className="text-sm font-medium text-destructive">
-                악으로 알려진 플레이어
+                노론 벽파로 알려진 플레이어
               </p>
               <ul className="text-sm list-disc list-inside">
                 {knownEvil.map((id) => (
@@ -93,7 +83,7 @@ export function NightVisionSummary({
           {knownMerlinCandidates.length > 0 && (
             <div className="space-y-2 p-3 rounded-lg bg-primary/10 border border-primary/30">
               <p className="text-sm font-medium text-primary">
-                멀린 후보 (멀린 또는 모르가나)
+                {TERMS.merlinCandidate} (정조 또는 심환지)
               </p>
               <ul className="text-sm list-disc list-inside">
                 {knownMerlinCandidates.map((id) => (
@@ -105,7 +95,7 @@ export function NightVisionSummary({
 
           {knownEvilTeammates.length > 0 && (
             <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-              <p className="text-sm font-medium text-destructive">악의 동료</p>
+              <p className="text-sm font-medium text-destructive">노론 동료</p>
               <ul className="text-sm list-disc list-inside">
                 {knownEvilTeammates.map((id) => (
                   <li key={id}>{idToName(players, id)}</li>

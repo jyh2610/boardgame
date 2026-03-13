@@ -1,6 +1,7 @@
 "use client";
 
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
+import { TERMS } from "@/lib/avalon-theme";
 import { Crown, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +17,14 @@ export function BoardStatus({ players, proposedTeam }: BoardStatusProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 sm:gap-4 px-3 py-2 border-b border-border bg-muted/30">
-      {/* 원정대장 토큰 (왕관) */}
+      {/* 사명장 토큰 (왕관) */}
       <div className="flex items-center gap-2">
         <div className="flex items-center justify-center size-8 rounded-lg bg-amber-500/20 border-2 border-amber-500/50">
           <Crown className="size-4 text-amber-600 dark:text-amber-400" />
         </div>
         <div className="flex flex-col">
           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            원정대장
+            {TERMS.missionLeader}
           </span>
           <span className="text-sm font-bold">
             {leader ? leader.name : "—"}
@@ -34,14 +35,14 @@ export function BoardStatus({ players, proposedTeam }: BoardStatusProps) {
       {/* 구분선 */}
       <div className="hidden sm:block w-px h-8 bg-border" />
 
-      {/* 원정 투표 마커 - 지목된 플레이어들 */}
+      {/* 사명단 마커 - 지목된 플레이어들 */}
       <div className="flex items-center gap-2">
         <div className="flex items-center justify-center size-8 rounded-lg bg-primary/20 border-2 border-primary/40">
           <Sword className="size-4 text-primary" />
         </div>
         <div className="flex flex-col">
           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            원정대
+            {TERMS.missionTeam}
           </span>
           <div className="flex flex-wrap gap-1.5">
             {proposedPlayers.length > 0 ? (

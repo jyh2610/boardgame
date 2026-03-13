@@ -15,7 +15,7 @@ export function RejectCount({
   phase,
   maxRejects = 5,
 }: RejectCountProps) {
-  const isCleared = phase === "QUESTING" && rejectTrack === 0;
+  const isCleared = phase === "SIMYANG" && rejectTrack === 0;
   const isDanger = rejectTrack >= 4;
   const isEvilWin = rejectTrack >= maxRejects;
 

@@ -32,14 +32,15 @@ export function PhaseAssassination({
           <CardTitle>암살 단계</CardTitle>
         </div>
         <p className="text-sm text-muted-foreground">
-          선이 승리했습니다. 암살자가 멀린을 지목하면 악의 승리입니다.
+          규장각이 승리했습니다. 존현각 자객이 정조를 지목하면 노론 벽파의
+          승리입니다.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {canAssassinate ? (
           <>
             <p className="text-sm font-medium">
-              멀린으로 의심되는 플레이어를 선택하세요.
+              정조로 의심되는 플레이어를 선택하세요.
             </p>
 
             <PlayerList
@@ -58,12 +59,12 @@ export function PhaseAssassination({
               onClick={() => selected && onAssassinate(selected)}
               disabled={!selected || isActing}
             >
-              {isActing ? "지목 중..." : "암살 지목"}
+              {isActing ? "지목 중..." : "정조 지목"}
             </Button>
           </>
         ) : (
           <p className="text-sm text-muted-foreground text-center">
-            암살자가 멀린을 지목하는 중...
+            존현각 자객이 정조를 지목하는 중...
           </p>
         )}
       </CardContent>

@@ -49,7 +49,7 @@ export function PhaseVoting({
         <p className="text-sm text-muted-foreground">
           {hasVoted
             ? "투표가 완료되었습니다. 다른 플레이어의 투표를 기다리는 중..."
-            : "제안된 원정대에 찬성하시겠습니까?"}
+            : "제안된 사명단에 찬성하시겠습니까?"}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">

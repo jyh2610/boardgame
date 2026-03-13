@@ -28,11 +28,11 @@ export function PhaseQuesting({
   return (
     <Card className="max-w-lg mx-auto">
       <CardHeader>
-        <CardTitle>퀘스트 수행</CardTitle>
+        <CardTitle>사명 수행</CardTitle>
         <p className="text-sm text-muted-foreground">
           {isOnQuest
-            ? "원정대에 포함되었습니다. 성공 또는 실패 카드를 선택하세요."
-            : "원정대가 퀘스트를 수행하는 중입니다."}
+            ? "사명단에 포함되었습니다. 성공 또는 실패 카드를 선택하세요."
+            : "사명단이 사명을 수행하는 중입니다."}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">

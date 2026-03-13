@@ -2,39 +2,29 @@
 
 import type { NightVision } from "@/lib/avalon-engine";
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
+import { ROLE_NAMES, TERMS } from "@/lib/avalon-theme";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Moon, CheckCircle2, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ROLE_NAMES: Record<string, string> = {
-  MERLIN: "멀린",
-  PERCIVAL: "퍼시벌",
-  LOYAL: "충직한 시민",
-  ASSASSIN: "암살자",
-  MORGANNA: "모르가나",
-  MORDRED: "모드레드",
-  OBERON: "오베론",
-  MINION: "악의 하수인",
-};
-
 const ROLE_DESCRIPTIONS: Record<string, string> = {
-  MERLIN:
-    "선의 세력. 밤에 모든 악의 세력을 볼 수 있음 (단, 모드레드는 제외). 원정 3번 성공 시 암살자가 멀린을 지목하면 악의 역전승.",
-  PERCIVAL:
-    "선의 세력. 밤에 멀린과 모르가나 중 한 명을 볼 수 있음 (둘 다 '멀린 후보'로 표시됨). 진짜 멀린을 찾아 보호해야 함.",
-  LOYAL:
-    "선의 세력. 특별한 능력 없음. 원정에 참가 시 성공 카드만 제출 가능. 악을 찾아 원정을 성공시키는 것이 목표.",
-  ASSASSIN:
-    "악의 세력. 악 동료들을 모두 알고 있음. 원정 3번 성공 후 멀린을 정확히 지목하면 악의 역전승.",
-  MORGANNA:
-    "악의 세력. 퍼시벌에게 멀린 후보로 보임 (멀린과 함께). 악 동료들을 모두 알고 있음.",
-  MORDRED:
-    "악의 세력. 멀린에게 보이지 않음 (멀린은 모드레드를 악으로 알 수 없음). 악 동료들을 모두 알고 있음.",
-  OBERON:
-    "악의 세력. 다른 악에게 보이지 않고, 다른 악도 모름. 혼자 행동해야 함.",
-  MINION:
-    "악의 세력. 악 동료들을 모두 알고 있음. 원정에 참가 시 실패 카드 제출 가능.",
+  JUNGJO:
+    "규장각. 밤에 노론 벽파를 모두 볼 수 있음 (단, 정순왕후는 제외). 사명 3번 성공 시 존현각 자객이 정조를 지목하면 노론 벽파의 역전승.",
+  JUNGYAKYONG:
+    "규장각. 밤에 정조와 심환지 중 한 명을 볼 수 있음 (둘 다 '정조 후보'로 표시됨). 진짜 정조를 찾아 보호해야 함.",
+  GYUJANGGAK:
+    "규장각. 특별한 능력 없음. 사명에 참가 시 성공 카드만 제출 가능. 노론 벽파를 찾아 사명을 성공시키는 것이 목표.",
+  JAGAP:
+    "노론 벽파. 동료들을 모두 알고 있음. 사명 3번 성공 후 정조를 정확히 지목하면 노론 벽파의 역전승.",
+  SIMHWANJI:
+    "노론 벽파. 정약용에게 정조 후보로 보임 (정조와 함께). 노론 동료들을 모두 알고 있음.",
+  JEONGSUNWANGHU:
+    "노론 벽파. 정조에게 보이지 않음 (정조는 정순왕후를 노론으로 알 수 없음). 노론 동료들을 모두 알고 있음.",
+  HONGGUKYEONG:
+    "노론 벽파. 다른 노론에게 보이지 않고, 다른 노론도 모름. 혼자 행동해야 함.",
+  NORON_BYOKPA:
+    "노론 벽파. 동료들을 모두 알고 있음. 사명에 참가 시 실패 카드 제출 가능.",
 };
 
 interface PhaseNightProps {
@@ -79,7 +69,8 @@ export function PhaseNight({
           <CardTitle>밤 - 역할 확인</CardTitle>
         </div>
         <p className="text-sm text-muted-foreground">
-          역할을 확인한 뒤 확인 버튼을 눌러주세요. 전원 확인 시 게임이 진행됩니다.
+          역할을 확인한 뒤 확인 버튼을 눌러주세요. 전원 확인 시 게임이
+          진행됩니다.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -89,7 +80,7 @@ export function PhaseNight({
             {ROLE_NAMES[myRole] ?? myRole}
           </p>
           <p className="text-sm text-muted-foreground">
-            {myTeam === "GOOD" ? "선의 세력" : "악의 세력"}
+            {myTeam === "GOOD" ? TERMS.goodForce : TERMS.evilForce}
           </p>
           {ROLE_DESCRIPTIONS[myRole] && (
             <p className="text-sm text-foreground pt-2 border-t border-border">
@@ -101,7 +92,7 @@ export function PhaseNight({
         {knownEvil.length > 0 && (
           <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
             <p className="text-sm font-medium text-destructive">
-              악으로 알려진 플레이어
+              노론 벽파로 알려진 플레이어
             </p>
             <ul className="text-sm list-disc list-inside">
               {knownEvil.map((id) => (
@@ -114,7 +105,7 @@ export function PhaseNight({
         {knownMerlinCandidates.length > 0 && (
           <div className="space-y-2 p-3 rounded-lg bg-primary/10 border border-primary/30">
             <p className="text-sm font-medium text-primary">
-              멀린 후보 (멀린 또는 모르가나)
+              {TERMS.merlinCandidate} (정조 또는 심환지)
             </p>
             <ul className="text-sm list-disc list-inside">
               {knownMerlinCandidates.map((id) => (
@@ -126,7 +117,7 @@ export function PhaseNight({
 
         {knownEvilTeammates.length > 0 && (
           <div className="space-y-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-            <p className="text-sm font-medium text-destructive">악의 동료</p>
+            <p className="text-sm font-medium text-destructive">노론 동료</p>
             <ul className="text-sm list-disc list-inside">
               {knownEvilTeammates.map((id) => (
                 <li key={id}>{idToName(players, id)}</li>
@@ -136,7 +127,9 @@ export function PhaseNight({
         )}
 
         <div className="space-y-2">
-          <p className="text-sm font-medium">확인 현황 ({nightConfirmPlayerIds.length}/{playerCount})</p>
+          <p className="text-sm font-medium">
+            확인 현황 ({nightConfirmPlayerIds.length}/{playerCount})
+          </p>
           <div className="flex flex-col gap-2">
             {players.map((p) => {
               const isConfirmed = confirmSet.has(p.id);
@@ -148,13 +141,15 @@ export function PhaseNight({
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-lg border transition-colors",
                     isMe && "border-primary bg-primary/10",
-                    !isConfirmed && "opacity-80"
+                    !isConfirmed && "opacity-80",
                   )}
                 >
                   <div
                     className={cn(
                       "size-10 rounded-full flex items-center justify-center text-lg font-bold border-2",
-                      isMe ? "border-primary bg-primary/20" : "border-border bg-muted"
+                      isMe
+                        ? "border-primary bg-primary/20"
+                        : "border-border bg-muted",
                     )}
                   >
                     {p.name.charAt(0)}
@@ -180,7 +175,8 @@ export function PhaseNight({
 
         {!allConfirmed && (
           <p className="text-sm text-amber-600 dark:text-amber-500 text-center">
-            {playerCount - nightConfirmPlayerIds.length}명이 아직 확인하지 않았습니다.
+            {playerCount - nightConfirmPlayerIds.length}명이 아직 확인하지
+            않았습니다.
           </p>
         )}
 

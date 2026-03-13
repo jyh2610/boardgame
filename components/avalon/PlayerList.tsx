@@ -1,6 +1,7 @@
 "use client";
 
 import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
+import { TERMS } from "@/lib/avalon-theme";
 import { Crown, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +65,7 @@ export function PlayerList({
                 {isOnQuest && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/40">
                     <Sword className="size-3" />
-                    원정대
+                    {TERMS.missionTeam}
                   </span>
                 )}
               </div>
