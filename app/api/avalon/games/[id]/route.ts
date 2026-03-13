@@ -33,7 +33,7 @@ export async function GET(
   if (playerId) {
     const publicState = getPublicStateForPlayer(state, playerId);
     const nightVision =
-      state.phase === "NIGHT" ? getNightVision(state, playerId) : null;
+      state.phase !== "LOBBY" ? getNightVision(state, playerId) : null;
     const playerRole =
       state.phase !== "LOBBY" ? getPlayerRoleInfo(state, playerId) : null;
     const roomCode = await getAvalonCodeByGameId(id);

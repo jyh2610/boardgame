@@ -33,7 +33,12 @@ export interface AvalonPublicState {
   assassinationTarget: string | null;
   readyPlayerIds?: string[];
   nightConfirmPlayerIds?: string[];
-  lastVoteResult?: { approveCount: number; rejectCount: number; passed: boolean };
+  lastVoteResult?: {
+    approveCount: number;
+    rejectCount: number;
+    passed: boolean;
+  };
+  gameLog?: string[];
 }
 
 /** playerId로 fetchGame 호출 시 반환 타입 */

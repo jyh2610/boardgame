@@ -87,7 +87,12 @@ export interface AvalonMatchState {
   winner: Team | null; // 게임 종료 시 승리 진영
   readyPlayerIds?: string[]; // LOBBY 단계에서 준비 완료한 플레이어 id
   nightConfirmPlayerIds?: string[]; // NIGHT 단계에서 확인 완료한 플레이어 id
-  lastVoteResult?: { approveCount: number; rejectCount: number; passed: boolean };
+  lastVoteResult?: {
+    approveCount: number;
+    rejectCount: number;
+    passed: boolean;
+  };
+  gameLog?: string[]; // 게임 진행 로그 (최신순)
 }
 
 // ============ 상수 및 설정 ============
@@ -208,6 +213,11 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
+function addLog(state: AvalonMatchState, message: string): AvalonMatchState {
+  const log = state.gameLog ?? [];
+  return { ...state, gameLog: [message, ...log] };
+}
+
 // ============ 엔진 함수 ============
 
 /**
@@ -247,6 +257,7 @@ export function createAvalonLobby(
     assassinationTarget: null,
     winner: null,
     readyPlayerIds: [],
+    gameLog: [],
   };
 }
 
@@ -275,18 +286,22 @@ export function createAvalonGame(
     questCard: null,
   }));
 
-  return {
-    config,
-    phase: "NIGHT",
-    currentRound: 1,
-    questTrack: [null, null, null, null, null],
-    rejectTrack: 0,
-    proposedTeam: [],
-    players,
-    questResultsShuffled: [],
-    assassinationTarget: null,
-    winner: null,
-  };
+  return addLog(
+    {
+      config,
+      phase: "NIGHT",
+      currentRound: 1,
+      questTrack: [null, null, null, null, null],
+      rejectTrack: 0,
+      proposedTeam: [],
+      players,
+      questResultsShuffled: [],
+      assassinationTarget: null,
+      winner: null,
+      gameLog: [],
+    },
+    "게임이 시작되었습니다.",
+  );
 }
 
 /**
@@ -304,10 +319,10 @@ export function confirmNightPhase(
   const allConfirmed = newConfirmIds.length >= playerCount;
 
   if (allConfirmed) {
-    return {
-      ...state,
-      phase: "TEAM_BUILDING",
-    };
+    return addLog(
+      { ...state, phase: "TEAM_BUILDING" },
+      "모든 플레이어가 역할을 확인했습니다. 1라운드 원정대 구성을 시작합니다.",
+    );
   }
   return {
     ...state,
@@ -457,15 +472,23 @@ export function proposeTeam(
 
   // 투표 단계로 전환, 모든 플레이어 투표 초기화
   const playersWithResetVote = state.players.map((p) => ({ ...p, vote: null }));
+  const leaderName = leader.name;
+  const teamNames = teamMemberIds
+    .map((id) => state.players.find((p) => p.id === id)?.name ?? "?")
+    .join(", ");
+  const logMsg = `원정대장 ${leaderName}이(가) 원정대를 제안했습니다: ${teamNames}`;
 
   return {
     success: true,
-    state: {
-      ...state,
-      phase: "VOTING",
-      proposedTeam: teamMemberIds,
-      players: playersWithResetVote,
-    },
+    state: addLog(
+      {
+        ...state,
+        phase: "VOTING",
+        proposedTeam: teamMemberIds,
+        players: playersWithResetVote,
+      },
+      logMsg,
+    ),
   };
 }
 
@@ -503,19 +526,28 @@ export function submitVote(
   const rejectCount = players.filter((p) => p.vote === "REJECT").length;
   const totalPlayers = players.length;
   const majority = totalPlayers / 2;
-  const lastVoteResult = { approveCount, rejectCount, passed: approveCount > majority };
+  const lastVoteResult = {
+    approveCount,
+    rejectCount,
+    passed: approveCount > majority,
+  };
+
+  const voteLog = `투표 결과: 찬성 ${approveCount} / 반대 ${rejectCount} - ${approveCount > majority ? "가결" : "부결"}`;
 
   if (approveCount > majority) {
     // 가결 → 퀘스트 수행으로
     return {
       success: true,
-      state: {
-        ...state,
-        players,
-        phase: "QUESTING",
-        rejectTrack: 0, // 원정 출발 시 부결 카운트 초기화
-        lastVoteResult,
-      },
+      state: addLog(
+        {
+          ...state,
+          players,
+          phase: "QUESTING",
+          rejectTrack: 0, // 원정 출발 시 부결 카운트 초기화
+          lastVoteResult,
+        },
+        voteLog,
+      ),
     };
   }
 
@@ -534,27 +566,33 @@ export function submitVote(
   if (newRejectTrack >= 5) {
     return {
       success: true,
-      state: {
-        ...state,
-        players: playersWithNewLeader,
-        phase: "END",
-        rejectTrack: newRejectTrack,
-        winner: "EVIL",
-        lastVoteResult,
-      },
+      state: addLog(
+        {
+          ...state,
+          players: playersWithNewLeader,
+          phase: "END",
+          rejectTrack: newRejectTrack,
+          winner: "EVIL",
+          lastVoteResult,
+        },
+        "부결 5회 - 악의 승리!",
+      ),
     };
   }
 
   return {
     success: true,
-    state: {
-      ...state,
-      players: playersWithNewLeader,
-      phase: "TEAM_BUILDING",
-      proposedTeam: [],
-      rejectTrack: newRejectTrack,
-      lastVoteResult,
-    },
+    state: addLog(
+      {
+        ...state,
+        players: playersWithNewLeader,
+        phase: "TEAM_BUILDING",
+        proposedTeam: [],
+        rejectTrack: newRejectTrack,
+        lastVoteResult,
+      },
+      voteLog,
+    ),
   };
 }
 
@@ -585,16 +623,24 @@ export function mergeVotesAndProcess(
   const rejectCount = mergedPlayers.filter((p) => p.vote === "REJECT").length;
   const totalPlayers = mergedPlayers.length;
   const majority = totalPlayers / 2;
-  const lastVoteResult = { approveCount, rejectCount, passed: approveCount > majority };
+  const lastVoteResult = {
+    approveCount,
+    rejectCount,
+    passed: approveCount > majority,
+  };
+  const voteLog = `투표 결과: 찬성 ${approveCount} / 반대 ${rejectCount} - ${approveCount > majority ? "가결" : "부결"}`;
 
   if (approveCount > majority) {
-    return {
-      ...baseState,
-      players: mergedPlayers,
-      phase: "QUESTING",
-      rejectTrack: 0,
-      lastVoteResult,
-    };
+    return addLog(
+      {
+        ...baseState,
+        players: mergedPlayers,
+        phase: "QUESTING",
+        rejectTrack: 0,
+        lastVoteResult,
+      },
+      voteLog,
+    );
   }
 
   const leaderIndex = baseState.players.findIndex((p) => p.isLeader);
@@ -608,24 +654,30 @@ export function mergeVotesAndProcess(
   }));
 
   if (newRejectTrack >= 5) {
-    return {
-      ...baseState,
-      players: playersWithNewLeader,
-      phase: "END",
-      rejectTrack: newRejectTrack,
-      winner: "EVIL",
-      lastVoteResult,
-    };
+    return addLog(
+      {
+        ...baseState,
+        players: playersWithNewLeader,
+        phase: "END",
+        rejectTrack: newRejectTrack,
+        winner: "EVIL",
+        lastVoteResult,
+      },
+      "부결 5회 - 악의 승리!",
+    );
   }
 
-  return {
-    ...baseState,
-    players: playersWithNewLeader,
-    phase: "TEAM_BUILDING",
-    proposedTeam: [],
-    rejectTrack: newRejectTrack,
-    lastVoteResult,
-  };
+  return addLog(
+    {
+      ...baseState,
+      players: playersWithNewLeader,
+      phase: "TEAM_BUILDING",
+      proposedTeam: [],
+      rejectTrack: newRejectTrack,
+      lastVoteResult,
+    },
+    voteLog,
+  );
 }
 
 /**
@@ -692,6 +744,7 @@ export function submitQuestCard(
 
   const newQuestTrack = [...state.questTrack];
   newQuestTrack[state.currentRound - 1] = questSuccess ? "SUCCESS" : "FAIL";
+  const roundLog = `라운드 ${state.currentRound} 퀘스트: ${questSuccess ? "성공!" : "실패!"}`;
 
   const successCount = newQuestTrack.filter((r) => r === "SUCCESS").length;
   const failRoundCount = newQuestTrack.filter((r) => r === "FAIL").length;
@@ -713,15 +766,21 @@ export function submitQuestCard(
 
     return {
       success: true,
-      state: {
-        ...state,
-        players: finalPlayers,
-        phase: "END",
-        questTrack: newQuestTrack,
-        questResultsShuffled: shuffled,
-        proposedTeam: [],
-        winner: "EVIL",
-      },
+      state: addLog(
+        addLog(
+          {
+            ...state,
+            players: finalPlayers,
+            phase: "END",
+            questTrack: newQuestTrack,
+            questResultsShuffled: shuffled,
+            proposedTeam: [],
+            winner: "EVIL",
+          },
+          "퀘스트 3번 실패 - 악의 승리!",
+        ),
+        roundLog,
+      ),
     };
   }
 
@@ -735,14 +794,20 @@ export function submitQuestCard(
 
     return {
       success: true,
-      state: {
-        ...state,
-        players: resetPlayers,
-        phase: "ASSASSINATION",
-        questTrack: newQuestTrack,
-        questResultsShuffled: shuffled,
-        proposedTeam: [],
-      },
+      state: addLog(
+        addLog(
+          {
+            ...state,
+            players: resetPlayers,
+            phase: "ASSASSINATION",
+            questTrack: newQuestTrack,
+            questResultsShuffled: shuffled,
+            proposedTeam: [],
+          },
+          "퀘스트 3번 성공 - 암살 단계로 진입",
+        ),
+        roundLog,
+      ),
     };
   }
 
@@ -761,18 +826,26 @@ export function submitQuestCard(
     isLeader: i === nextLeaderIndex,
   }));
 
+  const nextRoundLog = `${nextRound}라운드 원정대 구성을 시작합니다.`;
+
   return {
     success: true,
-    state: {
-      ...state,
-      players: finalPlayers,
-      currentRound: nextRound,
-      phase: "TEAM_BUILDING",
-      questTrack: newQuestTrack,
-      questResultsShuffled: shuffled,
-      proposedTeam: [],
-      lastVoteResult: undefined, // next round
-    },
+    state: addLog(
+      addLog(
+        {
+          ...state,
+          players: finalPlayers,
+          currentRound: nextRound,
+          phase: "TEAM_BUILDING",
+          questTrack: newQuestTrack,
+          questResultsShuffled: shuffled,
+          proposedTeam: [],
+          lastVoteResult: undefined, // next round
+        },
+        nextRoundLog,
+      ),
+      roundLog,
+    ),
   };
 }
 
@@ -799,15 +872,25 @@ export function submitAssassination(
   }
 
   const isMerlin = target.role === "MERLIN";
+  const targetName = target.name;
+  const resultLog = isMerlin
+    ? "멀린 암살 성공 - 악의 승리!"
+    : "멀린 암살 실패 - 선의 승리!";
 
   return {
     success: true,
-    state: {
-      ...state,
-      phase: "END",
-      assassinationTarget: targetId,
-      winner: isMerlin ? "EVIL" : "GOOD",
-    },
+    state: addLog(
+      addLog(
+        {
+          ...state,
+          phase: "END",
+          assassinationTarget: targetId,
+          winner: isMerlin ? "EVIL" : "GOOD",
+        },
+        resultLog,
+      ),
+      `암살자가 ${targetName}을(를) 지목했습니다.`,
+    ),
   };
 }
 
@@ -837,7 +920,12 @@ export function getPublicStateForPlayer(
   assassinationTarget: string | null;
   readyPlayerIds?: string[];
   nightConfirmPlayerIds?: string[];
-  lastVoteResult?: { approveCount: number; rejectCount: number; passed: boolean };
+  lastVoteResult?: {
+    approveCount: number;
+    rejectCount: number;
+    passed: boolean;
+  };
+  gameLog?: string[];
 } {
   const proposedSet = new Set(state.proposedTeam);
   const votesRevealed =
@@ -884,6 +972,7 @@ export function getPublicStateForPlayer(
     nightConfirmPlayerIds:
       state.phase === "NIGHT" ? state.nightConfirmPlayerIds : undefined,
     lastVoteResult: state.lastVoteResult,
+    gameLog: state.gameLog ?? [],
   };
 }
 

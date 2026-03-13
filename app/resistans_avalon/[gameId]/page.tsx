@@ -20,7 +20,9 @@ import { PhaseAssassination } from "@/components/avalon/PhaseAssassination";
 import { PhaseEnd } from "@/components/avalon/PhaseEnd";
 import { VoteResultBanner } from "@/components/avalon/VoteResultBanner";
 import { GameChat } from "@/components/avalon/GameChat";
+import { AvalonGameLog } from "@/components/avalon/AvalonGameLog";
 import { Rulebook } from "@/components/avalon/Rulebook";
+import { NightVisionSummary } from "@/components/avalon/NightVisionSummary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RotateCcw, Sword } from "lucide-react";
@@ -293,7 +295,15 @@ function AvalonGameInner({
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">플레이어</h3>
-              <Rulebook playerRole={state.playerRole ?? null} compact />
+              <div className="flex items-center gap-1.5">
+                {state.nightVision && (
+                  <NightVisionSummary
+                    nightVision={state.nightVision}
+                    players={state.players}
+                  />
+                )}
+                <Rulebook playerRole={state.playerRole ?? null} compact />
+              </div>
             </div>
             <PlayerList
               players={state.players}
@@ -420,14 +430,15 @@ function AvalonGameInner({
           </div>
         </section>
 
-        <aside className="lg:w-72 shrink-0 w-full lg:max-w-[288px]">
+        <aside className="lg:w-72 shrink-0 w-full lg:max-w-[288px] flex flex-col gap-3">
+          <AvalonGameLog gameLog={state.gameLog ?? []} className="shrink-0" />
           <GameChat
             gameId={gameId}
             playerId={playerId}
             playerName={
               state.players.find((p) => p.id === playerId)?.name ?? "플레이어"
             }
-            className="h-[320px] lg:h-[400px]"
+            className="h-[280px] lg:h-[340px] flex-1 min-h-0"
           />
         </aside>
       </main>
