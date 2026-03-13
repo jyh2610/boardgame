@@ -26,6 +26,7 @@ export interface AvalonPublicState {
   questResultsShuffled: QuestCard[];
   canProposeTeam: boolean;
   canVote: boolean;
+  hasVoted: boolean;
   canSubmitQuestCard: boolean;
   canAssassinate: boolean;
   winner: Team | null;

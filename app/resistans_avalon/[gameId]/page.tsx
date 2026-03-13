@@ -346,6 +346,7 @@ function AvalonGameInner({
                 players={state.players}
                 proposedTeam={state.proposedTeam}
                 canVote={state.canVote}
+                hasVoted={state.hasVoted}
                 onVote={(vote) => mp.act({ action: "vote", payload: { vote } })}
                 isActing={mp.isActing}
               />
@@ -380,6 +381,7 @@ function AvalonGameInner({
                 winner={state.winner}
                 playerId={playerId}
                 myTeam={state.nightVision?.myTeam}
+                players={state.players}
                 onRestart={async () => {
                   const { gameId: newGameId } = await createGame(
                     state.config.playerCount,

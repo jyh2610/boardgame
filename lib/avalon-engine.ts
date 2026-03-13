@@ -51,6 +51,8 @@ export interface AvalonPlayerPublic {
   isOnQuest: boolean; // 이번 원정대에 포함 여부
   vote: Vote | null; // 투표 완료 후에만 공개
   isReady?: boolean; // LOBBY 단계에서 준비 완료 여부
+  role?: Role; // END 단계에서만 공개
+  team?: Team; // END 단계에서만 공개
 }
 
 // 밤 단계에서 각 플레이어에게 보여줄 정보
@@ -800,6 +802,7 @@ export function getPublicStateForPlayer(
   questResultsShuffled: QuestCard[];
   canProposeTeam: boolean;
   canVote: boolean;
+  hasVoted: boolean;
   canSubmitQuestCard: boolean;
   canAssassinate: boolean;
   winner: Team | null;
@@ -810,6 +813,7 @@ export function getPublicStateForPlayer(
     state.phase !== "VOTING" || state.players.every((p) => p.vote !== null);
   const readySet = new Set(state.readyPlayerIds ?? []);
 
+  const revealRoles = state.phase === "END";
   const players: AvalonPlayerPublic[] = state.players.map((p) => ({
     id: p.id,
     name: p.name,
@@ -817,6 +821,7 @@ export function getPublicStateForPlayer(
     isOnQuest: proposedSet.has(p.id),
     vote: votesRevealed ? p.vote : null,
     isReady: state.phase === "LOBBY" ? readySet.has(p.id) : undefined,
+    ...(revealRoles && { role: p.role, team: p.team }),
   }));
 
   const leader = state.players.find((p) => p.isLeader);
@@ -824,6 +829,9 @@ export function getPublicStateForPlayer(
   const isOnQuest = proposedSet.has(playerId);
   const isAssassin =
     state.players.find((p) => p.id === playerId)?.role === "ASSASSIN";
+  const hasVoted =
+    state.phase === "VOTING" &&
+    (state.players.find((p) => p.id === playerId)?.vote ?? null) !== null;
 
   return {
     config: state.config,
@@ -836,6 +844,7 @@ export function getPublicStateForPlayer(
     questResultsShuffled: state.questResultsShuffled,
     canProposeTeam: state.phase === "TEAM_BUILDING" && isLeader,
     canVote: state.phase === "VOTING",
+    hasVoted,
     canSubmitQuestCard: state.phase === "QUESTING" && isOnQuest,
     canAssassinate: state.phase === "ASSASSINATION" && isAssassin,
     winner: state.winner,

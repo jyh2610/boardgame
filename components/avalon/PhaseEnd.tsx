@@ -1,16 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import type { Team } from "@/lib/avalon-engine";
+import type { Role, Team } from "@/lib/avalon-engine";
+import type { AvalonPlayerPublic } from "@/lib/avalon-engine";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Trophy, Swords, RotateCcw } from "lucide-react";
 
+const ROLE_NAMES: Record<Role, string> = {
+  MERLIN: "멀린",
+  PERCIVAL: "퍼시벌",
+  LOYAL: "충직한 시민",
+  ASSASSIN: "암살자",
+  MORGANNA: "모르가나",
+  MORDRED: "모드레드",
+  OBERON: "오베론",
+  MINION: "악의 하수인",
+};
+
 interface PhaseEndProps {
   winner: Team;
   playerId: string;
   myTeam?: Team;
+  players?: AvalonPlayerPublic[];
   onRestart?: () => Promise<void>;
 }
 
@@ -18,6 +31,7 @@ export function PhaseEnd({
   winner,
   playerId,
   myTeam,
+  players,
   onRestart,
 }: PhaseEndProps) {
   const router = useRouter();
@@ -56,6 +70,33 @@ export function PhaseEnd({
           <p className="text-center text-lg font-medium">
             {isMyWin ? "🎉 당신의 승리입니다!" : "😢 패배했습니다."}
           </p>
+        )}
+
+        {players && players.some((p) => p.role != null) && (
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h3 className="text-sm font-semibold mb-3">각 플레이어의 역할</h3>
+            <div className="space-y-2">
+              {players.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 py-2 px-3 rounded-md bg-background border border-border"
+                >
+                  <span className="font-medium">{p.name}</span>
+                  {p.role != null ? (
+                    <span
+                      className={`text-sm font-semibold ${
+                        p.team === "GOOD" ? "text-primary" : "text-destructive"
+                      }`}
+                    >
+                      {ROLE_NAMES[p.role]}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">-</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="flex flex-col gap-2">
